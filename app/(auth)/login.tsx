@@ -55,7 +55,7 @@ export default function login() {
                     <Text style={styles.googleButtonText}>Continue with Google</Text>
                 </TouchableOpacity>
                 <Text style={styles.termsText}>
-                    By Continue, you agree to our Terms and Privacy POlicy
+                    By Continue, you agree to our Terms and Privacy Policy
                 </Text>
             </View>
     </View>
