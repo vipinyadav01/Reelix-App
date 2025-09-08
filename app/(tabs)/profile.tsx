@@ -25,7 +25,7 @@ import {
 export default function Profile() {
   const { signOut, userId } = useAuth();
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-  const currentUser = useQuery(api.users.getUserByClerkId, userId ? { clerkId: userId } : "skip");
+  const currentUser = useQuery(api.user.getUserByClerkId, userId ? { clerkId: userId } : "skip");
 
   const [editedProfile, setEditedProfile] = useState({
     fullname: currentUser?.fullname || "",
@@ -35,7 +35,7 @@ export default function Profile() {
   const [selectedPost, setSelectedPost] = useState<Doc<"posts"> | null>(null);
   const posts = useQuery(api.posts.getPostsByUser, {});
 
-  const updateProfile = useMutation(api.users.updateProfile);
+  const updateProfile = useMutation(api.user.updateProfile);
 
   const handleSaveProfile = async () => {
     await updateProfile(editedProfile);
@@ -145,7 +145,7 @@ export default function Profile() {
                   style={styles.input}
                   value={editedProfile.fullname}
                   onChangeText={(text) => setEditedProfile((prev) => ({ ...prev, fullname: text }))}
-                  placeholderTextColor={COLORS.grey}
+                  placeholderTextColor={COLORS.gray}
                 />
               </View>
 
@@ -157,7 +157,7 @@ export default function Profile() {
                   onChangeText={(text) => setEditedProfile((prev) => ({ ...prev, bio: text }))}
                   multiline
                   numberOfLines={4}
-                  placeholderTextColor={COLORS.grey}
+                  placeholderTextColor={COLORS.gray}
                 />
               </View>
 

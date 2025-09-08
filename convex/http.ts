@@ -62,7 +62,7 @@ http.route({
         console.log("Event type:", eventType);
 
         if (eventType === "user.created") {
-            const { id, email_addresses, first_name, last_name, image_url } = event.data;
+            const { id, email_addresses, first_name, last_name, image_url, username } = event.data;
             
             if (!email_addresses || email_addresses.length === 0) {
                 console.error("No email addresses found in user data");
@@ -73,23 +73,25 @@ http.route({
 
             const email = email_addresses[0].email_address;
             const name = `${first_name || ""} ${last_name || ""}`.trim();
+            const userUsername = username || email.split("@")[0];
 
             // Log user data before creation
             console.log("Creating user with data:", {
                 email,
-                fullname: name,
-                image: image_url,
+                fullname: name || "Unknown User",
+                image: image_url || "",
                 clerkId: id,
-                username: email.split("@")[0],
+                username: userUsername,
             });
 
             try {
                 const result = await ctx.runMutation(api.user.createUser, {
                     email,
-                    fullname: name,
-                    image: image_url,
+                    fullname: name || "Unknown User",
+                    image: image_url || "",
                     clerkId: id,
-                    username: email.split("@")[0],
+                    username: userUsername,
+                    bio: "",
                 });
                 
                 // Log successful user creation

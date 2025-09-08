@@ -1,11 +1,18 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getAuthenticatedUser } from "./user";
 
 export const toggleBookmark = mutation({
   args: { postId: v.id("posts") },
   handler: async (ctx, args) => {
-    const currentUser = await getAuthenticatedUser(ctx);
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const currentUser = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .first();
+
+    if (!currentUser) throw new Error("User not found");
 
     const existing = await ctx.db
       .query("bookmarks")
@@ -26,7 +33,19 @@ export const toggleBookmark = mutation({
 
 export const getBookmarkedPosts = query({
   handler: async (ctx) => {
-    const currentUser = await getAuthenticatedUser(ctx);
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return []; // Return empty array if not authenticated
+    }
+
+    const currentUser = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .first();
+
+    if (!currentUser) {
+      return []; // Return empty array if user not found in database
+    }
 
     const bookmarks = await ctx.db
       .query("bookmarks")
