@@ -22,7 +22,7 @@ export const getStories = query({
     // Load involved users
     const userIds = Array.from(new Set(freshStories.map((s) => s.userId)));
     const users = await Promise.all(userIds.map((id) => ctx.db.get(id)));
-    const userMap = new Map(users.filter(Boolean).map((u) => [u!._id, u!]));
+    const userMap = new Map(users.filter((u): u is NonNullable<typeof u> => Boolean(u)).map((u) => [u._id, u]));
 
     // Reduce to one story marker per user (we only need presence + basic info here)
     const userStories = userIds
@@ -32,8 +32,8 @@ export const getStories = query({
         // Has story if present in freshStories
         return {
           id: String(uid),
-          username: user.username,
-          avatar: user.image,
+          username: (user as any).username,
+          avatar: (user as any).image,
           hasStory: true,
           latestTime:
             freshStories
@@ -59,6 +59,8 @@ export const addStory = mutation({
   args: {
     imageUrl: v.string(),
     caption: v.optional(v.string()),
+    mediaType: v.union(v.literal("image"), v.literal("video")),
+    privacy: v.optional(v.union(v.literal("public"), v.literal("close_friends"))),
   },
   handler: async (ctx, args) => {
     const currentUser = await getAuthenticatedUser(ctx);
@@ -66,7 +68,137 @@ export const addStory = mutation({
       userId: currentUser._id,
       imageUrl: args.imageUrl,
       caption: args.caption,
+      mediaType: args.mediaType,
+      privacy: args.privacy ?? "public",
     });
+  },
+});
+
+export const getUserStories = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    const cutoff = now - ONE_DAY_MS;
+    const stories = await ctx.db
+      .query("stories")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .collect();
+    return stories
+      .filter((s) => s._creationTime >= cutoff)
+      .sort((a, b) => a._creationTime - b._creationTime)
+      .map((s) => ({
+        _id: s._id,
+        imageUrl: s.imageUrl,
+        caption: s.caption,
+        mediaType: s.mediaType,
+        _creationTime: s._creationTime,
+      }));
+  },
+});
+
+// Client-friendly upload flow
+export const generateUploadUrl = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const uploadUrl = await ctx.storage.generateUploadUrl();
+    return uploadUrl;
+  },
+});
+
+export const createStory = mutation({
+  args: {
+    storageId: v.id("_storage"),
+    caption: v.optional(v.string()),
+    mediaType: v.union(v.literal("image"), v.literal("video")),
+    privacy: v.optional(v.union(v.literal("public"), v.literal("close_friends"))),
+  },
+  handler: async (ctx, args) => {
+    const currentUser = await getAuthenticatedUser(ctx);
+    const imageUrl = await ctx.storage.getUrl(args.storageId);
+    if (!imageUrl) throw new Error("Failed to resolve story URL");
+    await ctx.db.insert("stories", {
+      userId: currentUser._id,
+      imageUrl,
+      caption: args.caption,
+      mediaType: args.mediaType,
+      privacy: args.privacy ?? "public",
+    });
+  },
+});
+
+export const getStoriesFeed = query({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const cutoff = now - ONE_DAY_MS;
+    const me = await getAuthenticatedUser(ctx);
+
+    // who I follow
+    const following = await ctx.db
+      .query("follows")
+      .withIndex("by_follower", (q) => q.eq("followerId", me._id))
+      .collect();
+    const followingIds = new Set(following.map((f) => f.followingId));
+
+    // candidate stories (fresh)
+    const stories = (await ctx.db.query("stories").collect()).filter((s) => s._creationTime >= cutoff);
+
+    // group by author and apply privacy + follow filter
+    const byAuthor = new Map<string, typeof stories>();
+    for (const s of stories) {
+      // privacy filter
+      if (s.privacy === "close_friends") {
+        // basic placeholder: require mutual follow
+        const mutual = await ctx.db
+          .query("follows")
+          .withIndex("by_follower_and_following", (q) => q.eq("followerId", s.userId).eq("followingId", me._id))
+          .first();
+        if (!mutual) continue;
+      }
+      if (!followingIds.has(s.userId) && s.userId !== me._id) continue;
+      const arr = byAuthor.get(s.userId as any) ?? [];
+      arr.push(s);
+      byAuthor.set(s.userId as any, arr);
+    }
+
+    // view states
+    const views = await ctx.db
+      .query("storyViews")
+      .withIndex("by_viewer", (q) => q.eq("viewerId", me._id))
+      .collect();
+    const viewedAuthors = new Map(views.map((v) => [v.authorId, v]));
+
+    // score and categorize
+    type Item = { authorId: any; username: string; avatar: string; hasStory: boolean; viewed: boolean; score: number; latest: number };
+    const items: Item[] = [];
+    for (const [authorId, arr] of byAuthor.entries()) {
+      const user = await ctx.db.get(authorId as any);
+      if (!user) continue;
+      const latest = arr.reduce((acc, s) => Math.max(acc, s._creationTime), 0);
+      const viewed = viewedAuthors.has(authorId as any);
+      const base = viewed ? 500 : 1000;
+      const recencyBoost = latest / 1e7; // scale down
+      const mutual = await ctx.db
+        .query("follows")
+        .withIndex("by_follower_and_following", (q) => q.eq("followerId", authorId as any).eq("followingId", me._id))
+        .first();
+      const mutualBoost = mutual ? 200 : 0;
+      const score = base + recencyBoost + mutualBoost;
+      items.push({ authorId, username: (user as any).username, avatar: (user as any).image, hasStory: true, viewed, score, latest });
+    }
+
+    // sort: unviewed first by score, then viewed by score
+    const unviewed = items.filter((i) => !i.viewed).sort((a, b) => b.score - a.score);
+    const viewedList = items.filter((i) => i.viewed).sort((a, b) => b.score - a.score);
+    // me first if I have story
+    const meItem = unviewed.find((i) => String(i.authorId) === String(me._id)) || viewedList.find((i) => String(i.authorId) === String(me._id));
+    const merged = [
+      ...(meItem ? [meItem] : []),
+      ...unviewed.filter((i) => String(i.authorId) !== String(me._id)),
+      ...viewedList.filter((i) => String(i.authorId) !== String(me._id)),
+    ];
+
+    return merged.map((i) => ({ id: String(i.authorId), username: i.username, avatar: i.avatar, hasStory: i.hasStory }));
   },
 });
 

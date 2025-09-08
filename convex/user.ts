@@ -108,6 +108,43 @@ export const isFollowing = query({
   },
 });
 
+export const respondToFollowRequest = mutation({
+  args: { followerId: v.id("users"), approve: v.boolean() },
+  handler: async (ctx, args) => {
+    const currentUser = await getAuthenticatedUser(ctx);
+    const request = await ctx.db
+      .query("followRequests")
+      .withIndex("by_follower_and_following", (q) => q.eq("followerId", args.followerId).eq("followingId", currentUser._id))
+      .first();
+    if (!request) return;
+    if (args.approve) {
+      await ctx.db.insert("follows", { followerId: args.followerId, followingId: currentUser._id });
+      await updateFollowCounts(ctx, args.followerId, currentUser._id, true);
+      await ctx.db.delete(request._id);
+    } else {
+      await ctx.db.delete(request._id);
+    }
+  },
+});
+
+export const getRelationshipData = query({
+  args: { targetId: v.id("users") },
+  handler: async (ctx, args) => {
+    const me = await getAuthenticatedUser(ctx);
+    const following = await ctx.db
+      .query("follows")
+      .withIndex("by_follower_and_following", (q) => q.eq("followerId", me._id).eq("followingId", args.targetId))
+      .first();
+    const followedBy = await ctx.db
+      .query("follows")
+      .withIndex("by_follower_and_following", (q) => q.eq("followerId", args.targetId).eq("followingId", me._id))
+      .first();
+    const followStatus = Boolean(following);
+    const mutualFollow = Boolean(following && followedBy);
+    return { followStatus, mutualFollow } as const;
+  },
+});
+
 export const toggleFollow = mutation({
   args: { followingId: v.id("users") },
   handler: async (ctx, args) => {
@@ -124,8 +161,29 @@ export const toggleFollow = mutation({
       // unfollow
       await ctx.db.delete(existing._id);
       await updateFollowCounts(ctx, currentUser._id, args.followingId, false);
+      return { success: true, newStatus: false } as const;
     } else {
-      // follow
+      const target = await ctx.db.get(args.followingId);
+      const requiresApproval = Boolean((target as any)?.private);
+
+      if (requiresApproval) {
+        // if already requested, short-circuit
+        const existingReq = await ctx.db
+          .query("followRequests")
+          .withIndex("by_follower_and_following", (q) => q.eq("followerId", currentUser._id).eq("followingId", args.followingId))
+          .first();
+        if (!existingReq) {
+          await ctx.db.insert("followRequests", {
+            followerId: currentUser._id,
+            followingId: args.followingId,
+            status: "pending",
+            createdAt: Date.now(),
+          });
+        }
+        return { success: true, newStatus: false, requiresApproval: true } as const;
+      }
+
+      // follow immediately
       await ctx.db.insert("follows", {
         followerId: currentUser._id,
         followingId: args.followingId,
@@ -138,6 +196,7 @@ export const toggleFollow = mutation({
         senderId: currentUser._id,
         type: "follow",
       });
+      return { success: true, newStatus: true } as const;
     }
   },
 });

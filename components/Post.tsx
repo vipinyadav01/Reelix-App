@@ -5,7 +5,7 @@ import { styles } from "@/styles/feed.styles";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import { Image } from "expo-image";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import CommentsModal from "./CommentsModal";
@@ -37,6 +37,7 @@ export default function Post({ post }: PostProps) {
   const [showComments, setShowComments] = useState(false);
 
   const { user } = useUser();
+  const router = useRouter();
 
   const currentUser = useQuery(api.user.getUserByClerkId, user ? { clerkId: user.id } : "skip");
 
@@ -66,22 +67,28 @@ export default function Post({ post }: PostProps) {
     }
   };
 
+  const handleUserImageClick = () => {
+    // Navigate to the user's profile
+    router.push(`/profile/${post.author._id}` as any);
+  };
+
   return (
     <View style={styles.post}>
       {/* POST HEADER */}
       <View style={styles.postHeader}>
-        <Link href="/(tabs)/profile" asChild>
-          <TouchableOpacity style={styles.postHeaderLeft}>
-            <Image
-              source={post.author.image}
-              style={styles.postAvatar}
-              contentFit="cover"
-              transition={200}
-              cachePolicy="memory-disk"
-            />
-            <Text style={styles.postUsername}>{post.author.username}</Text>
-          </TouchableOpacity>
-        </Link>
+        <TouchableOpacity 
+          style={styles.postHeaderLeft}
+          onPress={handleUserImageClick}
+        >
+          <Image
+            source={post.author.image}
+            style={styles.postAvatar}
+            contentFit="cover"
+            transition={200}
+            cachePolicy="memory-disk"
+          />
+          <Text style={styles.postUsername}>{post.author.username}</Text>
+        </TouchableOpacity>
 
         {/* if i'm the owner of the post, show the delete button  */}
         {post.author._id === currentUser?._id ? (

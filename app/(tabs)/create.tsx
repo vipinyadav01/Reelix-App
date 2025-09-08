@@ -23,7 +23,6 @@ import { Image } from 'expo-image';
 import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import * as FileSystem from 'expo-file-system';
-// Gradients removed for black & white theme
 
 const { width } = Dimensions.get('window');
 
@@ -33,16 +32,13 @@ export default function CreateScreen() {
   const [caption, setCaption] = useState('');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isSharing, setIsSharing] = useState(false);
-  const [isPostedImage, setIsPostedImage] = useState(false); // Track if image was just posted
-  
-  // Animation refs
+  const [isPostedImage, setIsPostedImage] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Initial animations
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -85,8 +81,7 @@ export default function CreateScreen() {
 
       if (!result.canceled) {
         setSelectedImage(result.assets[0].uri);
-        setIsPostedImage(false); // Reset posted state when new image is selected
-        // Animate image appearance
+        setIsPostedImage(false);
         Animated.spring(scaleAnim, {
           toValue: 1,
           tension: 50,
@@ -116,20 +111,31 @@ export default function CreateScreen() {
       }).start();
 
       const uploadUrl = await generateUploadUrl();
-      const uploadResult = await FileSystem.uploadAsync(
-        uploadUrl,
-        selectedImage,
-        {
-          httpMethod: 'POST',
-          uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
-          mimeType: 'image/jpeg',
-        }
-      );
-
-      if (uploadResult.status !== 200) throw new Error('Upload Failed');
-
-      const { storageId } = JSON.parse(uploadResult.body);
-      await createPost({ storageId, caption });
+      let storageId: string;
+      if (Platform.OS === 'web') {
+        const blob = await (await fetch(selectedImage)).blob();
+        const resp = await fetch(uploadUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': blob.type || 'image/jpeg' },
+          body: blob,
+        });
+        if (!resp.ok) throw new Error('Upload Failed');
+        const json = await resp.json();
+        storageId = json.storageId;
+      } else {
+        const uploadResult = await FileSystem.uploadAsync(
+          uploadUrl,
+          selectedImage,
+          {
+            httpMethod: 'POST',
+            uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
+            mimeType: 'image/jpeg',
+          }
+        );
+        if (uploadResult.status !== 200) throw new Error('Upload Failed');
+        storageId = JSON.parse(uploadResult.body).storageId;
+      }
+      await createPost({ storageId: storageId as any, caption });
 
       // Show success and navigate to feed
       Alert.alert(

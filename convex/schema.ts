@@ -11,7 +11,13 @@ export default defineSchema({
         followers : v.number(),
         following: v.number(),
         posts: v.number(),
-        clerkId: v.string()
+        clerkId: v.string(),
+        private: v.optional(v.boolean()),
+        firstName: v.optional(v.string()),
+        lastName: v.optional(v.string()),
+        imageUrl: v.optional(v.string()),
+        followersCount: v.optional(v.number()),
+        followingCount: v.optional(v.number()),
     }).index("by_clerk_id" , ["clerkId"]),
     posts: defineTable({
         userId: v.id("users"),
@@ -60,5 +66,20 @@ export default defineSchema({
         userId: v.id("users"),
         imageUrl: v.string(),
         caption: v.optional(v.string()),
+        mediaType: v.union(v.literal("image"), v.literal("video")),
+        privacy: v.optional(v.union(v.literal("public"), v.literal("close_friends"))),
     }).index("by_user", ["userId"]),
+
+    storyViews: defineTable({
+        viewerId: v.id("users"),
+        authorId: v.id("users"),
+        lastViewedAt: v.number(),
+    }).index("by_viewer", ["viewerId"]).index("by_author", ["authorId"]).index("by_viewer_and_author", ["viewerId","authorId"]),
+
+    followRequests: defineTable({
+        followerId: v.id("users"),
+        followingId: v.id("users"),
+        status: v.union(v.literal("pending"), v.literal("approved"), v.literal("rejected")),
+        createdAt: v.number(),
+    }).index("by_follower_and_following", ["followerId","followingId"]).index("by_following", ["followingId"]),
 })

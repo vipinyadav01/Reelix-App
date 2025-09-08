@@ -1,11 +1,5 @@
 export const STORIES = [
     {
-        id: "1",
-        username: "You",
-        avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d",
-        hasStory: false,
-    },
-    {
         id: "2",
         username: "Priya Sharma",
         avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330",

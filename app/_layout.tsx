@@ -8,6 +8,7 @@ import * as NavigationBar from "expo-navigation-bar";
 import { Platform } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
+import { SystemProvider } from "@/hooks/SystemProvider";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -28,12 +29,14 @@ export default function RootLayout() {
 
   return (
     <ClerkAndConvexProvider>
-      <SafeAreaProvider>
-        <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }} onLayout={onLayoutRootView}>
-          <InitialLayout />
-        </SafeAreaView>
-      </SafeAreaProvider>
-      <StatusBar style="light" />
+      <SystemProvider>
+        <SafeAreaProvider>
+          <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }} onLayout={onLayoutRootView}>
+            <InitialLayout />
+          </SafeAreaView>
+        </SafeAreaProvider>
+        <StatusBar style="light" />
+      </SystemProvider>
     </ClerkAndConvexProvider>
   );
 }
