@@ -23,7 +23,7 @@ export const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     fontFamily: "JetBrainsMono-Medium",
-    color: COLORS.primary,
+    color: COLORS.white,
   },
   listContainer: {
     padding: 16,
@@ -93,7 +93,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
   },
   notificationBadge: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.white,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -101,7 +101,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   notificationCount: {
-    color: COLORS.white,
+    color: COLORS.black,
     fontSize: 12,
     fontWeight: 'bold',
   },
@@ -121,12 +121,12 @@ export const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: 'rgba(79, 70, 229, 0.1)',
+    backgroundColor: '#111111',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
     borderWidth: 2,
-    borderColor: 'rgba(79, 70, 229, 0.2)',
+    borderColor: '#222222',
   },
   emptyTitle: {
     fontSize: 24,

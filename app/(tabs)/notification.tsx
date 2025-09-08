@@ -86,8 +86,8 @@ export default function Notifications() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={COLORS.primary}
-            colors={[COLORS.primary]}
+            tintColor={COLORS.white}
+            colors={[COLORS.white]}
             progressBackgroundColor={COLORS.surface}
           />
         }

@@ -48,7 +48,7 @@ export default function Bookmarks() {
       >
         <Text style={styles.headerTitle}>Bookmarks</Text>
         <View style={styles.headerRight}>
-          <Ionicons name="bookmark" size={24} color={COLORS.primary} />
+          <Ionicons name="bookmark" size={24} color={COLORS.white} />
         </View>
       </Animated.View>
 
@@ -161,7 +161,7 @@ function NoBookmarksFound() {
         ]}
       >
         <View style={styles.emptyIconContainer}>
-          <Ionicons name="bookmark-outline" size={64} color={COLORS.primary} />
+          <Ionicons name="bookmark-outline" size={64} color={COLORS.white} />
         </View>
         <Text style={styles.emptyTitle}>No Bookmarks Yet</Text>
         <Text style={styles.emptySubtitle}>

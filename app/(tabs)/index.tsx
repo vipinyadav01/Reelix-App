@@ -50,7 +50,6 @@ export default function Index() {
 
   const onRefresh = () => {
     setRefreshing(true);
-    // Simulate refresh with haptic feedback
     setTimeout(() => {
       setRefreshing(false);
     }, 1500);
@@ -59,8 +58,6 @@ export default function Index() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.background} />
-      
-      {/* ENHANCED HEADER */}
       <Animated.View 
         style={[
           styles.header, 
@@ -73,9 +70,6 @@ export default function Index() {
         <View style={styles.headerContent}>
           <View style={styles.headerLeft}>
             <Text style={styles.headerTitle}>Reelix</Text>
-            <View style={styles.headerBadge}>
-              <Text style={styles.headerBadgeText}>BETA</Text>
-            </View>
           </View>
           <View style={styles.headerRight}>
             <TouchableOpacity 

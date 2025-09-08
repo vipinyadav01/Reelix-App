@@ -3,8 +3,8 @@ import { v } from "convex/values";
 
 export default defineSchema({
     users: defineTable({
-        username: v.string (), //vipin
-        fullname: v.string (), // Vipin Yadav
+        username: v.string (),
+        fullname: v.string (), 
         email: v.string(),
         bio: v.optional(v.string()),
         image: v.string(),
@@ -55,4 +55,10 @@ export default defineSchema({
     }).index("by_user", ["userId"])
     .index("by_post", ["postId"])
     .index("by_user_and_post", ["userId","postId"]),
+
+    stories: defineTable({
+        userId: v.id("users"),
+        imageUrl: v.string(),
+        caption: v.optional(v.string()),
+    }).index("by_user", ["userId"]),
 })

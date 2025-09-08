@@ -46,11 +46,11 @@ export default function Notification({ notification }: NotificationProps) {
             />
             <View style={styles.iconBadge}>
               {notification.type === "like" ? (
-                <Ionicons name="heart" size={14} color={COLORS.primary} />
+                <Ionicons name="heart" size={14} color={COLORS.white} />
               ) : notification.type === "follow" ? (
-                <Ionicons name="person-add" size={14} color="#8B5CF6" />
+                <Ionicons name="person-add" size={14} color={COLORS.white} />
               ) : (
-                <Ionicons name="chatbubble" size={14} color="#3B82F6" />
+                <Ionicons name="chatbubble" size={14} color={COLORS.white} />
               )}
             </View>
           </TouchableOpacity>
