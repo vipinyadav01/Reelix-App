@@ -23,7 +23,7 @@ import { Image } from 'expo-image';
 import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import * as FileSystem from 'expo-file-system';
-import { LinearGradient } from 'expo-linear-gradient';
+// Gradients removed for black & white theme
 
 const { width } = Dimensions.get('window');
 
@@ -211,12 +211,9 @@ export default function CreateScreen() {
             }
           ]}
         >
-          <LinearGradient
-            colors={['rgba(79, 70, 229, 0.1)', 'rgba(79, 70, 229, 0.05)']}
-            style={styles.emptyImageContainer}
-          >
+          <View style={styles.emptyImageContainer}>
             <View style={styles.emptyIconContainer}>
-              <Ionicons name="camera" size={64} color={COLORS.primary} />
+              <Ionicons name="camera" size={64} color={COLORS.white} />
             </View>
             <Text style={styles.emptyTitle}>Share Your Moment</Text>
             <Text style={styles.emptySubtitle}>
@@ -227,15 +224,12 @@ export default function CreateScreen() {
               onPress={pickImage}
               activeOpacity={0.8}
             >
-              <LinearGradient
-                colors={[COLORS.primary, '#6366f1']}
-                style={styles.selectImageGradient}
-              >
-                <Ionicons name="image" size={20} color={COLORS.white} />
+              <View style={styles.selectImageGradient}>
+                <Ionicons name="image" size={20} color={COLORS.black} />
                 <Text style={styles.selectImageText}>Choose Photo</Text>
-              </LinearGradient>
+              </View>
             </TouchableOpacity>
-          </LinearGradient>
+          </View>
         </Animated.View>
       </View>
     );
@@ -303,12 +297,9 @@ export default function CreateScreen() {
                 <ActivityIndicator size="small" color={COLORS.white} />
               </View>
             ) : (
-              <LinearGradient
-                colors={[COLORS.primary, '#6366f1']}
-                style={styles.shareGradient}
-              >
+              <View style={styles.shareGradient}>
                 <Text style={styles.shareText}>Share</Text>
-              </LinearGradient>
+              </View>
             )}
           </TouchableOpacity>
         </Animated.View>

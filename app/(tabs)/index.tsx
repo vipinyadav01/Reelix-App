@@ -9,7 +9,6 @@ import { useQuery } from "convex/react";
 import { FlatList, RefreshControl, Text, TouchableOpacity, View, StatusBar, Animated, Alert } from "react-native";
 import { styles } from "../../styles/feed.styles";
 import { useState, useRef, useEffect } from "react";
-import { LinearGradient } from 'expo-linear-gradient';
 
 export default function Index() {
   const { signOut } = useAuth();
@@ -46,7 +45,8 @@ export default function Index() {
   };
 
   if (posts === undefined) return <Loader />;
-  if (posts.length === 0) return <NoPostsFound />;
+  const safePosts = posts.filter((p): p is NonNullable<typeof p> => p != null);
+  if (safePosts.length === 0) return <NoPostsFound />;
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -91,7 +91,7 @@ export default function Index() {
 
       {/* ENHANCED FEED */}
       <FlatList
-        data={posts}
+        data={safePosts}
         renderItem={({ item, index }) => (
           <Animated.View
             style={{
@@ -156,30 +156,23 @@ const NoPostsFound = () => {
   return (
     <View style={styles.noPostsContainer}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.background} />
-      
-      <LinearGradient
-        colors={[COLORS.background, 'rgba(79, 70, 229, 0.1)', COLORS.background]}
-        style={styles.noPostsGradient}
-      >
+      <View style={styles.noPostsGradient}>
         <Animated.View style={[styles.noPostsContent, { transform: [{ scale: pulseAnim }] }]}>
           <View style={styles.noPostsIconContainer}>
-            <Ionicons name="camera-outline" size={64} color={COLORS.primary} />
+            <Ionicons name="camera-outline" size={64} color={COLORS.white} />
           </View>
           <Text style={styles.noPostsTitle}>No Posts Yet</Text>
           <Text style={styles.noPostsSubtitle}>
             Be the first to share something amazing!
           </Text>
           <TouchableOpacity style={styles.createPostButton} activeOpacity={0.8}>
-            <LinearGradient
-              colors={[COLORS.primary, '#6366f1']}
-              style={styles.createPostGradient}
-            >
-              <Ionicons name="add" size={20} color={COLORS.white} />
+            <View style={styles.createPostGradient}>
+              <Ionicons name="add" size={20} color={COLORS.black} />
               <Text style={styles.createPostText}>Create Post</Text>
-            </LinearGradient>
+            </View>
           </TouchableOpacity>
         </Animated.View>
-      </LinearGradient>
+      </View>
     </View>
   );
 };

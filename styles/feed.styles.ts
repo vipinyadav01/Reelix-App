@@ -305,12 +305,12 @@ bheader: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: 'rgba(79, 70, 229, 0.1)',
+    backgroundColor: '#111111',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
     borderWidth: 2,
-    borderColor: 'rgba(79, 70, 229, 0.2)',
+    borderColor: '#222222',
   },
   noPostsTitle: {
     fontSize: 28,
@@ -340,10 +340,10 @@ bheader: {
     alignItems: 'center',
     paddingHorizontal: 24,
     paddingVertical: 14,
-    backgroundColor: COLORS.primary, // Fallback background
+    backgroundColor: COLORS.white,
   },
   createPostText: {
-    color: COLORS.white,
+    color: COLORS.black,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
