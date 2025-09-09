@@ -82,6 +82,9 @@ export const styles = StyleSheet.create({
   noStory: {
     borderColor: COLORS.gray,
   },
+  viewedStory: {
+    borderColor: COLORS.gray,
+  },
   storyAvatar: {
     width: 60,
     height: 60,

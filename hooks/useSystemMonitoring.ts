@@ -18,12 +18,6 @@ export function useSystemMonitoring({
   onError,
 }: SystemMonitoringOptions) {
   
-  // Monitor follow status changes
-  const followStatus = useQuery(
-    api.user.getRelationshipData,
-    targetUserId ? { targetId: targetUserId as any } : "skip"
-  );
-
   // Monitor user data changes
   const currentUser = useQuery(
     api.user.getUserByClerkId,
@@ -33,6 +27,12 @@ export function useSystemMonitoring({
   const targetUser = useQuery(
     api.user.getUserByClerkId,
     targetUserId ? { clerkId: targetUserId } : "skip"
+  );
+
+  // Monitor follow status changes
+  const followStatus = useQuery(
+    api.user.getRelationshipData,
+    targetUser && targetUser._id ? { targetId: targetUser._id } : "skip"
   );
 
   // Handle follow status updates

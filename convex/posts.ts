@@ -89,6 +89,7 @@ export const getFeedPosts = query({
             _id: postAuthor._id,
             username: postAuthor.username,
             image: postAuthor.image,
+            clerkId: postAuthor.clerkId,
           },
           isLiked: !!like,
           isBookmarked: !!bookmark,

@@ -47,17 +47,17 @@ export function useProfileScreen(
 
   const relationshipData = useQuery(
     api.user.getRelationshipData,
-    targetUser ? { targetId: targetUser._id } : "skip"
+    targetUser && targetUser._id ? { targetId: targetUser._id } : "skip"
   );
 
   const userPosts = useQuery(
     api.posts.getUserPosts,
-    targetUser ? { userId: targetUser._id } : "skip"
+    targetUser && targetUser._id ? { userId: targetUser._id } : "skip"
   );
 
   const userStories = useQuery(
     api.stories.getUserStories,
-    targetUser ? { userId: targetUser._id } : "skip"
+    targetUser && targetUser._id ? { userId: targetUser._id } : "skip"
   );
 
   // Mutations
@@ -158,7 +158,7 @@ export function useProfileScreen(
     if (!targetUser) return;
     
     // Navigate to chat/message screen
-    router.push(`/chat/${targetUser._id}`);
+    router.push(`/chat/${targetUser._id}` as any);
   }, [targetUser, router]);
 
   return {

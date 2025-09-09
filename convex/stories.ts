@@ -126,6 +126,28 @@ export const createStory = mutation({
   },
 });
 
+export const markStoryAsViewed = mutation({
+  args: { authorId: v.id("users") },
+  handler: async (ctx, args) => {
+    const currentUser = await getAuthenticatedUser(ctx);
+    
+    // Check if already viewed
+    const existingView = await ctx.db
+      .query("storyViews")
+      .withIndex("by_viewer", (q) => q.eq("viewerId", currentUser._id))
+      .filter((q) => q.eq(q.field("authorId"), args.authorId))
+      .first();
+    
+    if (!existingView) {
+      await ctx.db.insert("storyViews", {
+        viewerId: currentUser._id,
+        authorId: args.authorId,
+        lastViewedAt: Date.now(),
+      });
+    }
+  },
+});
+
 export const getStoriesFeed = query({
   args: {},
   handler: async (ctx) => {
@@ -198,7 +220,7 @@ export const getStoriesFeed = query({
       ...viewedList.filter((i) => String(i.authorId) !== String(me._id)),
     ];
 
-    return merged.map((i) => ({ id: String(i.authorId), username: i.username, avatar: i.avatar, hasStory: i.hasStory }));
+    return merged.map((i) => ({ id: String(i.authorId), username: i.username, avatar: i.avatar, hasStory: i.hasStory, viewed: i.viewed }));
   },
 });
 

@@ -26,6 +26,7 @@ type PostProps = {
       _id: string;
       username: string;
       image: string;
+      clerkId: string;
     };
   };
 };
@@ -68,8 +69,7 @@ export default function Post({ post }: PostProps) {
   };
 
   const handleUserImageClick = () => {
-    // Navigate to the user's profile
-    router.push(`/profile/${post.author._id}` as any);
+    router.push(`/profile/${post.author.clerkId}` as any);
   };
 
   return (
@@ -89,10 +89,8 @@ export default function Post({ post }: PostProps) {
           />
           <Text style={styles.postUsername}>{post.author.username}</Text>
         </TouchableOpacity>
-
-        {/* if i'm the owner of the post, show the delete button  */}
         {post.author._id === currentUser?._id ? (
-          <TouchableOpacity onPress={handleDelete}>
+          <TouchableOpacity onPress={handleDelete}> 
             <Ionicons name="trash-outline" size={20} color={COLORS.primary} />
           </TouchableOpacity>
         ) : (

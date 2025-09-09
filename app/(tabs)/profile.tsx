@@ -64,7 +64,7 @@ export default function Profile() {
           <View style={styles.avatarAndStats}>
             <View style={styles.avatarContainer}>
               <Image
-                source={currentUser.image}
+                source={{ uri: currentUser.image }}
                 style={styles.avatar}
                 contentFit="cover"
                 transition={200}
@@ -73,23 +73,28 @@ export default function Profile() {
 
             <View style={styles.statsContainer}>
               <View style={styles.statItem}>
-                <Text style={styles.statNumber}>{currentUser.posts}</Text>
+                <Text style={styles.statNumber}>{posts.length}</Text>
                 <Text style={styles.statLabel}>Posts</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={styles.statNumber}>{currentUser.followers}</Text>
+                <Text style={styles.statNumber}>{currentUser.followers || 0}</Text>
                 <Text style={styles.statLabel}>Followers</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={styles.statNumber}>{currentUser.following}</Text>
+                <Text style={styles.statNumber}>{currentUser.following || 0}</Text>
                 <Text style={styles.statLabel}>Following</Text>
               </View>
             </View>
           </View>
 
-          <Text style={styles.name}>{currentUser.fullname}</Text>
-          {currentUser.bio && <Text style={styles.bio}>{currentUser.bio}</Text>}
+          {/* USER INFO */}
+          <View style={styles.userInfo}>
+            <Text style={styles.name}>{currentUser.fullname}</Text>
+            <Text style={styles.username}>@{currentUser.username}</Text>
+            {currentUser.bio && <Text style={styles.bio}>{currentUser.bio}</Text>}
+          </View>
 
+          {/* ACTION BUTTONS */}
           <View style={styles.actionButtons}>
             <TouchableOpacity style={styles.editButton} onPress={() => setIsEditModalVisible(true)}>
               <Text style={styles.editButtonText}>Edit Profile</Text>
@@ -100,23 +105,33 @@ export default function Profile() {
           </View>
         </View>
 
-        {posts.length === 0 && <NoPostsFound />}
-
-        <FlatList
-          data={posts}
-          numColumns={3}
-          scrollEnabled={false}
-          renderItem={({ item }) => (
-            <TouchableOpacity style={styles.gridItem} onPress={() => setSelectedPost(item)}>
-              <Image
-                source={item.imageUrl}
-                style={styles.gridImage}
-                contentFit="cover"
-                transition={200}
-              />
-            </TouchableOpacity>
+        {/* POSTS SECTION */}
+        <View style={styles.postsSection}>
+          <View style={styles.postsHeader}>
+            <Text style={styles.postsTitle}>Posts</Text>
+          </View>
+          
+          {posts.length === 0 ? (
+            <NoPostsFound />
+          ) : (
+            <View style={styles.postsGrid}>
+              {posts.map((post, index) => (
+                <TouchableOpacity 
+                  key={post._id} 
+                  style={styles.gridItem} 
+                  onPress={() => setSelectedPost(post)}
+                >
+                  <Image
+                    source={{ uri: post.imageUrl }}
+                    style={styles.gridImage}
+                    contentFit="cover"
+                    transition={200}
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
           )}
-        />
+        </View>
       </ScrollView>
 
       {/* EDIT PROFILE MODAL */}
@@ -200,16 +215,10 @@ export default function Profile() {
 
 function NoPostsFound() {
   return (
-    <View
-      style={{
-        height: "100%",
-        backgroundColor: COLORS.background,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Ionicons name="images-outline" size={48} color={COLORS.primary} />
-      <Text style={{ fontSize: 20, color: COLORS.white }}>No posts yet</Text>
+    <View style={styles.emptyPostsContainer}>
+      <Ionicons name="images-outline" size={64} color={COLORS.gray} />
+      <Text style={styles.emptyPostsText}>No posts yet</Text>
+      <Text style={styles.emptyPostsSubtext}>Share your first moment with the world!</Text>
     </View>
   );
 }

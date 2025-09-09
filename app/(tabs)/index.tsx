@@ -58,6 +58,8 @@ export default function Index() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.background} />
+      
+      {/* IMPROVED HEADER */}
       <Animated.View 
         style={[
           styles.header, 
@@ -74,6 +76,12 @@ export default function Index() {
           <View style={styles.headerRight}>
             <TouchableOpacity 
               style={styles.headerButton}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="search-outline" size={24} color={COLORS.white} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.headerButton}
               onPress={handleSignOut}
               activeOpacity={0.7}
             >
@@ -83,7 +91,7 @@ export default function Index() {
         </View>
       </Animated.View>
 
-      {/* ENHANCED FEED */}
+      {/* ENHANCED FEED WITH BETTER LAYOUT */}
       <FlatList
         data={safePosts}
         renderItem={({ item, index }) => (
@@ -94,7 +102,7 @@ export default function Index() {
                 {
                   translateY: fadeAnim.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [50, 0],
+                    outputRange: [30, 0],
                   }),
                 },
               ],
@@ -121,6 +129,7 @@ export default function Index() {
           />
         }
         ItemSeparatorComponent={() => <View style={styles.postSeparator} />}
+        ListEmptyComponent={<NoPostsFound />}
       />
     </View>
   );
@@ -128,18 +137,27 @@ export default function Index() {
 
 const NoPostsFound = () => {
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    // Fade in animation
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 800,
+      useNativeDriver: true,
+    }).start();
+
+    // Pulse animation
     const pulse = () => {
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 0.8,
-          duration: 1000,
+          toValue: 0.9,
+          duration: 1200,
           useNativeDriver: true,
         }),
         Animated.timing(pulseAnim, {
           toValue: 1,
-          duration: 1000,
+          duration: 1200,
           useNativeDriver: true,
         }),
       ]).start(() => pulse());
@@ -148,25 +166,24 @@ const NoPostsFound = () => {
   }, []);
 
   return (
-    <View style={styles.noPostsContainer}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.background} />
+    <Animated.View style={[styles.noPostsContainer, { opacity: fadeAnim }]}>
       <View style={styles.noPostsGradient}>
         <Animated.View style={[styles.noPostsContent, { transform: [{ scale: pulseAnim }] }]}>
           <View style={styles.noPostsIconContainer}>
-            <Ionicons name="camera-outline" size={64} color={COLORS.white} />
+            <Ionicons name="camera-outline" size={64} color={COLORS.primary} />
           </View>
-          <Text style={styles.noPostsTitle}>No Posts Yet</Text>
+          <Text style={styles.noPostsTitle}>Welcome to Reelix!</Text>
           <Text style={styles.noPostsSubtitle}>
-            Be the first to share something amazing!
+            Your feed is empty. Start following people or create your first post to see amazing content here.
           </Text>
           <TouchableOpacity style={styles.createPostButton} activeOpacity={0.8}>
             <View style={styles.createPostGradient}>
-              <Ionicons name="add" size={20} color={COLORS.black} />
-              <Text style={styles.createPostText}>Create Post</Text>
+              <Ionicons name="add-circle" size={20} color={COLORS.black} />
+              <Text style={styles.createPostText}>Create Your First Post</Text>
             </View>
           </TouchableOpacity>
         </Animated.View>
       </View>
-    </View>
+    </Animated.View>
   );
 };

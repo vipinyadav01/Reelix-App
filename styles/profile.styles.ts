@@ -61,6 +61,16 @@ export const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.surface,
   },
+  headerLeft: {
+    flex: 1,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerIcon: {
+    padding: 8,
+  },
   headerButton: {
     width: 40,
     height: 40,
@@ -138,6 +148,12 @@ export const styles = StyleSheet.create({
     color: COLORS.gray,
     fontSize: 14,
     marginBottom: 8,
+  },
+  name: {
+    color: COLORS.white,
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 4,
   },
   bio: {
     color: COLORS.white,
@@ -245,9 +261,16 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   emptyPostsText: {
-    color: COLORS.gray,
-    fontSize: 16,
+    color: COLORS.white,
+    fontSize: 18,
+    fontWeight: '600',
     marginTop: 16,
+    textAlign: 'center',
+  },
+  emptyPostsSubtext: {
+    color: COLORS.gray,
+    fontSize: 14,
+    marginTop: 8,
     textAlign: 'center',
   },
   createPostButton: {
@@ -261,5 +284,137 @@ export const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: 16,
     fontWeight: '600',
+  },
+  // Profile tab specific styles
+  profileInfo: {
+    paddingVertical: 20,
+  },
+  avatarAndStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingHorizontal: 16,
+  },
+  editButton: {
+    flex: 1,
+    backgroundColor: COLORS.surface,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginRight: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.gray,
+  },
+  editButtonText: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  shareButton: {
+    width: 48,
+    height: 48,
+    backgroundColor: COLORS.surface,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.gray,
+  },
+  postsHeader: {
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  postsTitle: {
+    color: COLORS.white,
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  gridItem: {
+    width: (width - 48) / 3,
+    height: (width - 48) / 3,
+    marginRight: 6,
+    marginBottom: 6,
+  },
+  gridImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 4,
+  },
+  // Modal styles
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: COLORS.surface,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingBottom: 40,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    color: COLORS.white,
+    fontSize: 20,
+    fontWeight: '600',
+  },
+  inputContainer: {
+    marginBottom: 16,
+  },
+  inputLabel: {
+    color: COLORS.white,
+    fontSize: 16,
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: COLORS.background,
+    borderRadius: 8,
+    padding: 12,
+    color: COLORS.white,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: COLORS.gray,
+  },
+  bioInput: {
+    height: 80,
+    textAlignVertical: 'top',
+  },
+  saveButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  saveButtonText: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  postDetailContainer: {
+    width: '90%',
+    height: '80%',
+  },
+  postDetailHeader: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: 20,
+  },
+  postDetailImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
   },
 });
