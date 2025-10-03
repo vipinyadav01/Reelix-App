@@ -1,7 +1,7 @@
 export default {
     providers: [
       {
-        domain: "https://grand-raven-50.clerk.accounts.dev/",
+        domain: "https://popular-elk-63.clerk.accounts.dev/",
         applicationID: "convex",
       },
     ]
