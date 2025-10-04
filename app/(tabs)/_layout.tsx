@@ -2,7 +2,7 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '@/constants/theme';
 import { StyleSheet, View, Text } from 'react-native';
-import { useNotifications } from '@/hooks/useNotifications';
+import { useNotificationsSimple as useNotifications } from '@/hooks/useNotificationsSimple';
 
 // Custom component for tab icons with badges
 const TabBarIcon = ({ 

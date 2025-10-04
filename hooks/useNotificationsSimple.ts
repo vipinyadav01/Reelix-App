@@ -1,13 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-// Import notifications conditionally to avoid build issues
-let Notifications: any = null;
-try {
-  Notifications = require('expo-notifications');
-} catch (error) {
-  console.warn('expo-notifications not available:', error);
-}
 
 export interface Notification {
   id: string;
@@ -27,38 +19,14 @@ const generateUniqueId = (): string => {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${Math.floor(Math.random() * 1000)}`;
 };
 
-// Configure notification behavior
-if (Notifications) {
-  Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowAlert: true,
-      shouldPlaySound: true,
-      shouldSetBadge: false,
-    }),
-  });
-}
-
-export const useNotifications = () => {
+export const useNotificationsSimple = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const notificationListener = useRef<any>(null);
-  const responseListener = useRef<any>(null);
 
   // Load notifications from storage on mount
   useEffect(() => {
     loadNotifications();
-    setupNotificationListeners();
-    requestPermissions();
-
-    return () => {
-      if (Notifications && notificationListener.current) {
-        Notifications.removeNotificationSubscription(notificationListener.current);
-      }
-      if (Notifications && responseListener.current) {
-        Notifications.removeNotificationSubscription(responseListener.current);
-      }
-    };
   }, []);
 
   // Update unread count when notifications change
@@ -67,19 +35,6 @@ export const useNotifications = () => {
     setUnreadCount(unread);
     saveUnreadCount(unread);
   }, [notifications]);
-
-  const requestPermissions = async () => {
-    if (!Notifications) return;
-    
-    try {
-      const { status } = await Notifications.requestPermissionsAsync();
-      if (status !== 'granted') {
-        console.log('Notification permission denied');
-      }
-    } catch (error) {
-      console.error('Error requesting notification permissions:', error);
-    }
-  };
 
   const loadNotifications = async () => {
     try {
@@ -114,37 +69,6 @@ export const useNotifications = () => {
     } catch (error) {
       console.error('Error saving unread count:', error);
     }
-  };
-
-  const setupNotificationListeners = () => {
-    if (!Notifications) return;
-    
-    // Listen for notifications received while app is running
-    notificationListener.current = Notifications.addNotificationReceivedListener((notification: any) => {
-      const newNotification: Notification = {
-        id: notification.request.identifier || generateUniqueId(),
-        title: notification.request.content.title || 'New Notification',
-        body: notification.request.content.body || '',
-        data: notification.request.content.data,
-        read: false,
-        timestamp: Date.now(),
-        type: (notification.request.content.data?.type as any) || 'system',
-      };
-
-      setNotifications(prev => {
-        const updated = [newNotification, ...prev];
-        saveNotifications(updated);
-        return updated;
-      });
-    });
-
-    // Listen for user interactions with notifications
-    responseListener.current = Notifications.addNotificationResponseReceivedListener((response: any) => {
-      const notificationId = response.notification.request.identifier;
-      if (notificationId) {
-        markAsRead(notificationId);
-      }
-    });
   };
 
   const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
@@ -201,36 +125,91 @@ export const useNotifications = () => {
     return notifications.filter(notification => notification.type === type);
   };
 
-  // Schedule a local notification (for testing)
+  // Generate realistic sample notifications
+  const generateSampleNotifications = () => {
+    const sampleNotifications = [
+      {
+        title: "Sarah Johnson liked your post",
+        body: "Your video 'Amazing sunset views' received a like",
+        type: 'like' as const,
+      },
+      {
+        title: "Mike Chen commented on your post",
+        body: "Nice work! How did you capture this?",
+        type: 'comment' as const,
+      },
+      {
+        title: "Emma Wilson started following you",
+        body: "You have a new follower",
+        type: 'follow' as const,
+      },
+      {
+        title: "Alex Rodriguez mentioned you",
+        body: "Check out this awesome video @you",
+        type: 'mention' as const,
+      },
+      {
+        title: "Welcome to Reelix! 🎉",
+        body: "Start creating amazing content and connect with others",
+        type: 'system' as const,
+      },
+      {
+        title: "Your post is trending! 🔥",
+        body: "Your video has 1,000+ views in the last hour",
+        type: 'system' as const,
+      },
+      {
+        title: "David Lee liked your post",
+        body: "Your video 'Morning workout routine' received a like",
+        type: 'like' as const,
+      },
+      {
+        title: "Lisa Park commented on your post",
+        body: "This is so inspiring! Thank you for sharing",
+        type: 'comment' as const,
+      },
+    ];
+
+    // Add a random sample notification
+    const randomNotification = sampleNotifications[Math.floor(Math.random() * sampleNotifications.length)];
+    addNotification(randomNotification);
+  };
+
+  // Add multiple sample notifications
+  const addMultipleSampleNotifications = () => {
+    const sampleNotifications = [
+      {
+        title: "Mike Chen commented on your post",
+        body: "Nice work! How did you capture this?",
+        type: 'comment' as const,
+      },
+      {
+        title: "Your post is trending! 🔥",
+        body: "Your video has 1,000+ views in the last hour",
+        type: 'system' as const,
+      },
+      {
+        title: "Alex Rodriguez mentioned you",
+        body: "Check out this awesome video @you",
+        type: 'mention' as const,
+      },
+      {
+        title: "David Lee liked your post",
+        body: "Your video 'Morning workout routine' received a like",
+        type: 'like' as const,
+      },
+    ];
+
+    sampleNotifications.forEach((notification, index) => {
+      setTimeout(() => {
+        addNotification(notification);
+      }, index * 500); // Stagger the notifications
+    });
+  };
+
+  // Schedule a test notification (simulated)
   const scheduleTestNotification = async () => {
-    if (!Notifications) {
-      // Fallback: add a test notification directly
-      addNotification({
-        title: "New Like! ❤️",
-        body: "Someone liked your post",
-        type: 'like',
-      });
-      return;
-    }
-    
-    try {
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: "New Like! ❤️",
-          body: "Someone liked your post",
-          data: { type: 'like' },
-        },
-        trigger: { seconds: 2 },
-      });
-    } catch (error) {
-      console.error('Error scheduling notification:', error);
-      // Fallback: add a test notification directly
-      addNotification({
-        title: "New Like! ❤️",
-        body: "Someone liked your post",
-        type: 'like',
-      });
-    }
+    generateSampleNotifications();
   };
 
   return {
@@ -245,6 +224,7 @@ export const useNotifications = () => {
     getUnreadNotifications,
     getNotificationsByType,
     getUnreadCount: () => unreadCount,
-    scheduleTestNotification, 
+    scheduleTestNotification,
+    addMultipleSampleNotifications,
   };
 };
