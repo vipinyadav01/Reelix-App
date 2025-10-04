@@ -1,6 +1,7 @@
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import InitialLayout from "@/components/InitialLayout";
 import ClerkAndConvexProvider from "@/providers/ClerkAndConvexProvider";
+import NotificationProvider from "@/providers/NotificationProvider";
 import { SplashScreen } from "expo-router";
 import { useFonts } from "expo-font";
 import { useCallback, useEffect } from "react";
@@ -42,12 +43,14 @@ export default function RootLayout() {
   return (
     <ClerkAndConvexProvider>
       <SystemProvider>
-        <SafeAreaProvider>
-          <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
-            <InitialLayout />
-          </SafeAreaView>
-        </SafeAreaProvider>
-        <StatusBar style="light" />
+        <NotificationProvider>
+          <SafeAreaProvider>
+            <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
+              <InitialLayout />
+            </SafeAreaView>
+          </SafeAreaProvider>
+          <StatusBar style="light" />
+        </NotificationProvider>
       </SystemProvider>
     </ClerkAndConvexProvider>
   );
