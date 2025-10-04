@@ -20,9 +20,10 @@ export function useUserSync() {
     if (!user || !isLoaded) return;
     
     const timeout = setTimeout(() => {
+      console.log("User sync timeout reached - allowing navigation to proceed");
       setTimeoutReached(true);
       setSyncComplete(true);
-    }, 10000); // 10 second timeout
+    }, 15000); // 15 second timeout to give webhooks time to process
 
     return () => clearTimeout(timeout);
   }, [user, isLoaded]);
@@ -56,12 +57,18 @@ export function useUserSync() {
           bio: "",
         };
         
-        await createUser(userData);
-        setSyncComplete(true);
+        console.log("Creating user in Convex:", userData);
+        const createdUser = await createUser(userData);
+        console.log("User created successfully:", createdUser);
+        
+        // Only mark as complete if user was actually created
+        if (createdUser) {
+          setSyncComplete(true);
+        } else {
+          console.error("User creation returned null/undefined");
+        }
       } catch (error) {
         console.error("Error syncing user to Convex:", error);
-        // Even if sync fails, mark as complete to avoid infinite loading
-        setSyncComplete(true);
       } finally {
         setIsSyncing(false);
       }
@@ -71,11 +78,26 @@ export function useUserSync() {
   }, [isLoaded, user, existingUser, createUser, isSyncing, syncComplete, timeoutReached]);
 
   // Don't wait for user sync if not signed in
-  if (!isLoaded) return { user: null, isLoading: true };
-  if (!user) return { user: null, isLoading: false };
+  if (!isLoaded) return { 
+    user: null, 
+    isLoading: true, 
+    syncComplete: false, 
+    isSyncing: false, 
+    timeoutReached: false 
+  };
+  if (!user) return { 
+    user: null, 
+    isLoading: false, 
+    syncComplete: true, 
+    isSyncing: false, 
+    timeoutReached: false 
+  };
 
   return { 
     user: existingUser, 
-    isLoading: !syncComplete && !timeoutReached && (existingUser === undefined || isSyncing) 
+    isLoading: !syncComplete && !timeoutReached && (existingUser === undefined || isSyncing),
+    syncComplete,
+    isSyncing,
+    timeoutReached
   };
 }

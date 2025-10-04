@@ -61,7 +61,7 @@ http.route({
         const eventType = event.type;
         console.log("Event type:", eventType);
 
-        if (eventType === "user.created") {
+        if (eventType === "user.created" || eventType === "user.updated") {
             const { id, email_addresses, first_name, last_name, image_url, username } = event.data;
             
             if (!email_addresses || email_addresses.length === 0) {
@@ -75,8 +75,8 @@ http.route({
             const name = `${first_name || ""} ${last_name || ""}`.trim();
             const userUsername = username || email.split("@")[0];
 
-            // Log user data before creation
-            console.log("Creating user with data:", {
+            // Log user data before creation/update
+            console.log(`${eventType === "user.created" ? "Creating" : "Updating"} user with data:`, {
                 email,
                 fullname: name || "Unknown User",
                 image: image_url || "",
@@ -94,15 +94,24 @@ http.route({
                     bio: "",
                 });
                 
-                // Log successful user creation
-                console.log("User created successfully:", result);
+                // Log successful user creation/update
+                console.log(`User ${eventType === "user.created" ? "created" : "updated"} successfully:`, result);
                 
             } catch (error) {
-                console.error("Error creating user:", error);
-                return new Response("Error creating user", {
+                console.error(`Error ${eventType === "user.created" ? "creating" : "updating"} user:`, error);
+                return new Response(`Error ${eventType === "user.created" ? "creating" : "updating"} user`, {
                     status: 500,
                 });
             }
+        } else if (eventType === "user.deleted") {
+            const { id } = event.data;
+            
+            console.log("User deleted event received for Clerk ID:", id);
+            // Note: We'll let the client handle user deletion cleanup
+            // since we can't directly access the database from http actions
+            console.log("User deletion event processed");
+        } else {
+            console.log("Ignored webhook event type:", eventType);
         }
 
         return new Response("Webhook processed successfully", {

@@ -7,7 +7,7 @@ import { COLORS } from "@/constants/theme"
 
 export default function InitialLayout() {
     const { isLoaded, isSignedIn } = useAuth()
-    const { isLoading: userSyncLoading } = useUserSync()
+    const { isLoading: userSyncLoading, syncComplete, isSyncing, timeoutReached } = useUserSync()
     const [navigationReady, setNavigationReady] = useState(false)
 
     const segments = useSegments()
@@ -29,16 +29,17 @@ export default function InitialLayout() {
         const currentPath = segments.join("/")
         const isAuthScreen = segments[0] === "(auth)"
         const isIndexScreen = currentPath === "" || segments[0] === undefined
+        const isTabsScreen = segments[0] === "(tabs)"
         
-        // Only redirect if user is not on the correct screen
         if (!isSignedIn && !isAuthScreen) {
             router.replace("/(auth)/login")
-        } else if (isSignedIn && isIndexScreen) {
-            // Only redirect from index to tabs, don't interfere if already on tabs or auth
-            router.replace("/(tabs)")
+        } else if (isSignedIn && (isIndexScreen || isAuthScreen)) {
+            if (!isTabsScreen) {
+                router.replace("/(tabs)")
+            }
         }
 
-    }, [isLoaded, isSignedIn, segments, userSyncLoading, navigationReady, router])
+    }, [isLoaded, isSignedIn, segments, userSyncLoading, syncComplete, isSyncing, timeoutReached, navigationReady, router])
 
     if (!isLoaded || !navigationReady) {
         return (
@@ -51,10 +52,11 @@ export default function InitialLayout() {
     // Only show user sync loading if we're not already on a valid screen
     const isOnValidScreen = segments[0] === "(tabs)" || segments[0] === "(auth)"
     
+    // Show loading while syncing user data
     if (isSignedIn && userSyncLoading && !isOnValidScreen) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
-                <Text style={{ color: COLORS.white }}>Syncing user...</Text>
+                <Text style={{ color: COLORS.white }}>Setting up your account...</Text>
             </View>
         )
     }
