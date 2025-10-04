@@ -13,15 +13,6 @@ export default function InitialLayout() {
     const segments = useSegments()
     const router = useRouter()
 
-    console.log("InitialLayout Debug:", {
-        isLoaded,
-        isSignedIn,
-        userSyncLoading,
-        segments,
-        currentPath: segments.join("/"),
-        navigationReady
-    })
-
     // Add a small delay to ensure navigation is ready
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -31,41 +22,19 @@ export default function InitialLayout() {
     }, [])
 
     useEffect(() => {
-        console.log("InitialLayout useEffect triggered:", {
-            isLoaded,
-            isSignedIn,
-            userSyncLoading,
-            segments,
-            segmentsLength: segments.length,
-            navigationReady
-        })
-
         if (!isLoaded || !navigationReady) {
-            console.log("Waiting for clerk to load or navigation to be ready...")
             return
         }
 
         const currentPath = segments.join("/")
         const isAuthScreen = segments[0] === "(auth)"
-        const isTabsScreen = segments[0] === "(tabs)"
         const isIndexScreen = currentPath === "" || segments[0] === undefined
         
-        console.log("Navigation logic:", {
-            currentPath,
-            isAuthScreen,
-            isTabsScreen,
-            isIndexScreen,
-            shouldGoToLogin: !isSignedIn && !isAuthScreen,
-            shouldGoToTabs: isSignedIn && (isAuthScreen || isIndexScreen)
-        })
-
         // Only redirect if user is not on the correct screen
         if (!isSignedIn && !isAuthScreen) {
-            console.log("User not signed in, redirecting to login...")
             router.replace("/(auth)/login")
         } else if (isSignedIn && isIndexScreen) {
             // Only redirect from index to tabs, don't interfere if already on tabs or auth
-            console.log("User signed in, redirecting from index to tabs...")
             router.replace("/(tabs)")
         }
 

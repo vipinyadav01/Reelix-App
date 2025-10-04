@@ -1,5 +1,5 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native'
-import React from 'react'
+import React, { useState } from 'react'
 import { styles } from '@/styles/auth.styles'
 import { Ionicons } from '@expo/vector-icons'
 import { COLORS } from '@/constants/theme'
@@ -7,27 +7,49 @@ import { useSSO } from '@clerk/clerk-expo'
 import { useRouter, useSegments } from 'expo-router'
 
 export default function Login() {
-
+    const [isLoading, setIsLoading] = useState(false)
     const { startSSOFlow } = useSSO()
     const router = useRouter()
     const segments = useSegments()
 
     const handleGoogleSignIn = async () => {
+        if (isLoading) {
+            return;
+        }
+
         try {
-            const { createdSessionId, setActive } = await startSSOFlow({ strategy: 'oauth_google' })
+            setIsLoading(true);
+            
+            // Close any existing auth sessions first
+            if (typeof window !== 'undefined') {
+                // For web
+                window.location.reload();
+                return;
+            }
+            
+            const { createdSessionId, setActive } = await startSSOFlow({ 
+                strategy: 'oauth_google',
+                redirectUrl: undefined // Let Clerk handle the redirect
+            })
 
             if (setActive && createdSessionId) {
                 await setActive({ session: createdSessionId });
                 
                 // Check if we're still on auth screen before navigating
                 if (segments[0] === "(auth)") {
-                    console.log("Login successful, navigating to tabs...")
                     router.replace("/(tabs)")
                 }
             }
             
         } catch (error) {
             console.error("OAuth error:", error);
+            
+            // If browser is already open, try to handle it gracefully
+            if (error instanceof Error && error.message?.includes("Another web browser is already open")) {
+                // Browser conflict - user should close open browsers and retry
+            }
+        } finally {
+            setIsLoading(false);
         }
     }
   return (
@@ -51,14 +73,17 @@ export default function Login() {
             {/*  Auth Form */}
             <View style={styles.loginSection}>
                 <TouchableOpacity
-                 style={styles.googleButton}
-                 onPress={ handleGoogleSignIn}
+                 style={[styles.googleButton, isLoading && { opacity: 0.7 }]}
+                 onPress={handleGoogleSignIn}
                  activeOpacity={0.7}
+                 disabled={isLoading}
                 >
                 <View style={styles.googleIconContainer}>
                     <Ionicons name="logo-google" size={20} color={COLORS.surface} />
                     </View>
-                    <Text style={styles.googleButtonText}>Continue with Google</Text>
+                    <Text style={styles.googleButtonText}>
+                        {isLoading ? "Signing in..." : "Continue with Google"}
+                    </Text>
                 </TouchableOpacity>
                 <Text style={styles.termsText}>
                     By continuing, you agree to our Terms and Privacy Policy

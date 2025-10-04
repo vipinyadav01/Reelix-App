@@ -22,7 +22,6 @@ export function useUserSync() {
     const timeout = setTimeout(() => {
       setTimeoutReached(true);
       setSyncComplete(true);
-      console.log("User sync timeout reached");
     }, 10000); // 10 second timeout
 
     return () => clearTimeout(timeout);
@@ -30,34 +29,22 @@ export function useUserSync() {
 
   useEffect(() => {
     const syncUser = async () => {
-      console.log("=== User Sync Debug ===");
-      console.log("isLoaded:", isLoaded);
-      console.log("user:", user ? { id: user.id, email: user.primaryEmailAddress?.emailAddress } : null);
-      console.log("isSyncing:", isSyncing);
-      console.log("syncComplete:", syncComplete);
-      console.log("timeoutReached:", timeoutReached);
-      console.log("existingUser:", existingUser);
-      
       if (!isLoaded || !user || isSyncing || syncComplete || timeoutReached) {
-        console.log("Skipping user sync - conditions not met");
         return;
       }
 
       // If user exists in Convex, mark sync as complete
       if (existingUser) {
-        console.log("User already exists in Convex:", existingUser);
         setSyncComplete(true);
         return;
       }
 
       // If query is still loading, wait
       if (existingUser === undefined) {
-        console.log("Still loading existing user query...");
         return;
       }
 
       // User doesn't exist, create them
-      console.log("Creating new user in Convex...");
       setIsSyncing(true);
       try {
         const userData = {
@@ -68,10 +55,8 @@ export function useUserSync() {
           image: user.imageUrl || "",
           bio: "",
         };
-        console.log("User data to create:", userData);
         
-        const result = await createUser(userData);
-        console.log("User created successfully:", result);
+        await createUser(userData);
         setSyncComplete(true);
       } catch (error) {
         console.error("Error syncing user to Convex:", error);
