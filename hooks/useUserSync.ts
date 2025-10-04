@@ -30,29 +30,48 @@ export function useUserSync() {
 
   useEffect(() => {
     const syncUser = async () => {
-      if (!isLoaded || !user || isSyncing || syncComplete || timeoutReached) return;
+      console.log("=== User Sync Debug ===");
+      console.log("isLoaded:", isLoaded);
+      console.log("user:", user ? { id: user.id, email: user.primaryEmailAddress?.emailAddress } : null);
+      console.log("isSyncing:", isSyncing);
+      console.log("syncComplete:", syncComplete);
+      console.log("timeoutReached:", timeoutReached);
+      console.log("existingUser:", existingUser);
+      
+      if (!isLoaded || !user || isSyncing || syncComplete || timeoutReached) {
+        console.log("Skipping user sync - conditions not met");
+        return;
+      }
 
       // If user exists in Convex, mark sync as complete
       if (existingUser) {
+        console.log("User already exists in Convex:", existingUser);
         setSyncComplete(true);
         return;
       }
 
       // If query is still loading, wait
-      if (existingUser === undefined) return;
+      if (existingUser === undefined) {
+        console.log("Still loading existing user query...");
+        return;
+      }
 
       // User doesn't exist, create them
+      console.log("Creating new user in Convex...");
       setIsSyncing(true);
       try {
-        await createUser({
+        const userData = {
           clerkId: user.id,
           email: user.primaryEmailAddress?.emailAddress || "",
           fullname: user.fullName || "",
           username: user.username || user.primaryEmailAddress?.emailAddress?.split("@")[0] || "",
           image: user.imageUrl || "",
           bio: "",
-        });
-        console.log("User synced to Convex successfully");
+        };
+        console.log("User data to create:", userData);
+        
+        const result = await createUser(userData);
+        console.log("User created successfully:", result);
         setSyncComplete(true);
       } catch (error) {
         console.error("Error syncing user to Convex:", error);

@@ -13,31 +13,44 @@ export const createUser = mutation({
   },
 
   handler: async (ctx, args) => {
-    const existingUser = await ctx.db
-      .query("users")
-      .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
-      .first();
+    console.log("=== Creating user in Convex ===");
+    console.log("Args:", args);
+    
+    try {
+      const existingUser = await ctx.db
+        .query("users")
+        .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
+        .first();
 
-    if (existingUser) {
-      console.log("User already exists:", existingUser._id);
-      return existingUser;
+      if (existingUser) {
+        console.log("User already exists:", existingUser._id);
+        return existingUser;
+      }
+
+      // create a user in db
+      const userId = await ctx.db.insert("users", {
+        username: args.username || args.email.split("@")[0],
+        fullname: args.fullname || "Unknown User",
+        email: args.email,
+        bio: args.bio || "",
+        image: args.image || "",
+        clerkId: args.clerkId,
+        followers: 0,
+        following: 0,
+        posts: 0,
+      });
+
+      console.log("User created successfully with ID:", userId);
+      
+      // Return the created user
+      const createdUser = await ctx.db.get(userId);
+      console.log("Created user data:", createdUser);
+      
+      return createdUser;
+    } catch (error) {
+      console.error("Error in createUser mutation:", error);
+      throw error;
     }
-
-    // create a user in db
-    const userId = await ctx.db.insert("users", {
-      username: args.username || args.email.split("@")[0],
-      fullname: args.fullname || "Unknown User",
-      email: args.email,
-      bio: args.bio || "",
-      image: args.image || "",
-      clerkId: args.clerkId,
-      followers: 0,
-      following: 0,
-      posts: 0,
-    });
-
-    console.log("User created successfully:", userId);
-    return { _id: userId };
   },
 });
 

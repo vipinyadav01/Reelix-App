@@ -4,24 +4,30 @@ import { styles } from '@/styles/auth.styles'
 import { Ionicons } from '@expo/vector-icons'
 import { COLORS } from '@/constants/theme'
 import { useSSO } from '@clerk/clerk-expo'
-import { useRouter } from 'expo-router'
+import { useRouter, useSegments } from 'expo-router'
 
-export default function login() {
+export default function Login() {
 
-    const{startSSOFlow} = useSSO()
+    const { startSSOFlow } = useSSO()
     const router = useRouter()
+    const segments = useSegments()
 
     const handleGoogleSignIn = async () => {
         try {
-          const{ createdSessionId,setActive}= await startSSOFlow({strategy: 'oauth_google'})
+            const { createdSessionId, setActive } = await startSSOFlow({ strategy: 'oauth_google' })
 
-          if(setActive && createdSessionId){
-            setActive({session: createdSessionId});
-            router.replace("/(tabs)")
-          }
+            if (setActive && createdSessionId) {
+                await setActive({ session: createdSessionId });
+                
+                // Check if we're still on auth screen before navigating
+                if (segments[0] === "(auth)") {
+                    console.log("Login successful, navigating to tabs...")
+                    router.replace("/(tabs)")
+                }
+            }
             
         } catch (error) {
-            console.error("0Auth error :", error);
+            console.error("OAuth error:", error);
         }
     }
   return (
@@ -33,7 +39,7 @@ export default function login() {
                 <Ionicons name="logo-web-component" size={32} color={COLORS.primary} />
             </View>
             <Text style={styles.appName}>reelix</Text>
-            <Text style={styles.tagline}>Don't miss anythings</Text>
+            <Text style={styles.tagline}>Don&apos;t miss anything</Text>
             </View>
 
             {/*  Auth Image */}
@@ -55,7 +61,7 @@ export default function login() {
                     <Text style={styles.googleButtonText}>Continue with Google</Text>
                 </TouchableOpacity>
                 <Text style={styles.termsText}>
-                    By Continue, you agree to our Terms and Privacy Policy
+                    By continuing, you agree to our Terms and Privacy Policy
                 </Text>
             </View>
     </View>

@@ -1,27 +1,16 @@
 import React from 'react';
-import { View, ActivityIndicator, Text } from 'react-native';
 import { useSystemInitialization } from './useSystemInitialization';
 
 export function SystemProvider({ children }: { children: React.ReactNode }) {
-  const { isReady, isLoading, error } = useSystemInitialization();
+  const { error } = useSystemInitialization();
 
   if (error) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ color: '#fff' }}>System Error: {error}</Text>
-      </View>
-    );
+    console.warn('System initialization error:', error);
+    // Don't block the app for system errors, just log them
   }
 
-  if (isLoading || !isReady) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#fff" />
-        <Text style={{ color: '#fff', marginTop: 12 }}>Initializing system...</Text>
-      </View>
-    );
-  }
-
+  // Don't block the app with loading screens - let the authentication flow handle the UI
+  // The system initialization happens in the background
   return <>{children}</>;
 }
 

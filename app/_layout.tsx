@@ -18,19 +18,32 @@ export default function RootLayout() {
   });
 
   const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded) await SplashScreen.hideAsync();
+    if (fontsLoaded) {
+      await SplashScreen.hideAsync();
+    }
   }, [fontsLoaded]);
+
   useEffect(() => {
     if (Platform.OS === "android") {
       NavigationBar.setButtonStyleAsync("light");
     }
   }, []);
 
+  useEffect(() => {
+    if (fontsLoaded) {
+      onLayoutRootView();
+    }
+  }, [fontsLoaded, onLayoutRootView]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
     <ClerkAndConvexProvider>
       <SystemProvider>
         <SafeAreaProvider>
-          <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }} onLayout={onLayoutRootView}>
+          <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
             <InitialLayout />
           </SafeAreaView>
         </SafeAreaProvider>
