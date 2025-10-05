@@ -22,7 +22,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
 import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 
 const { width } = Dimensions.get('window');
 
@@ -62,7 +62,7 @@ export default function CreateScreen() {
   const pickImage = async () => {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      
+
       if (status !== 'granted') {
         Alert.alert(
           'Permission Required',
@@ -99,10 +99,10 @@ export default function CreateScreen() {
 
   const handleShare = async () => {
     if (!selectedImage) return;
-    
+
     try {
       setIsSharing(true);
-      
+
       // Start progress animation
       Animated.timing(progressAnim, {
         toValue: 1,
@@ -128,7 +128,6 @@ export default function CreateScreen() {
           selectedImage,
           {
             httpMethod: 'POST',
-            uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
             mimeType: 'image/jpeg',
           }
         );
@@ -137,7 +136,6 @@ export default function CreateScreen() {
       }
       await createPost({ storageId: storageId as any, caption });
 
-      // Show success and navigate to feed
       Alert.alert(
         'Success!',
         'Your post has been shared successfully!',
@@ -145,7 +143,6 @@ export default function CreateScreen() {
           {
             text: 'View in Feed',
             onPress: () => {
-              // Clear everything and go to feed
               setSelectedImage(null);
               setCaption('');
               setIsPostedImage(false);
@@ -156,7 +153,6 @@ export default function CreateScreen() {
             text: 'Create Another',
             style: 'default',
             onPress: () => {
-              // Clear everything to start fresh
               setSelectedImage(null);
               setCaption('');
               setIsPostedImage(false);
@@ -185,9 +181,9 @@ export default function CreateScreen() {
     return (
       <View style={styles.container}>
         <StatusBar barStyle="light-content" backgroundColor={COLORS.background} />
-        
+
         {/* Enhanced Header */}
-        <Animated.View 
+        <Animated.View
           style={[
             styles.header,
             {
@@ -196,7 +192,7 @@ export default function CreateScreen() {
             }
           ]}
         >
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => router.back()}
             style={styles.headerButton}
             activeOpacity={0.7}
@@ -208,7 +204,7 @@ export default function CreateScreen() {
         </Animated.View>
 
         {/* Enhanced Empty State */}
-        <Animated.View 
+        <Animated.View
           style={[
             styles.emptyStateContainer,
             {
@@ -248,10 +244,10 @@ export default function CreateScreen() {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
     >
       <StatusBar barStyle="light-content" backgroundColor={COLORS.background} />
-      
+
       <View style={styles.contentContainer}>
         {/* Enhanced Header */}
-        <Animated.View 
+        <Animated.View
           style={[
             styles.header,
             {
@@ -267,8 +263,8 @@ export default function CreateScreen() {
                 'Are you sure you want to discard this post?',
                 [
                   { text: 'Cancel', style: 'cancel' },
-                  { 
-                    text: 'Discard', 
+                  {
+                    text: 'Discard',
                     style: 'destructive',
                     onPress: () => {
                       setSelectedImage(null);
@@ -289,9 +285,9 @@ export default function CreateScreen() {
               color={isSharing ? COLORS.gray : COLORS.white}
             />
           </TouchableOpacity>
-          
+
           <Text style={styles.headerTitle}>New Post</Text>
-          
+
           <TouchableOpacity
             style={[styles.shareButton, isSharing && styles.shareButtonDisabled]}
             disabled={isSharing || !selectedImage}
@@ -333,9 +329,9 @@ export default function CreateScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <Animated.View 
+          <Animated.View
             style={[
-              styles.content, 
+              styles.content,
               isSharing && styles.contentDisabled,
               {
                 opacity: fadeAnim,
@@ -345,7 +341,7 @@ export default function CreateScreen() {
           >
             {/* Enhanced Image Section */}
             <View style={styles.imageSection}>
-              <Animated.View 
+              <Animated.View
                 style={[
                   styles.imageContainer,
                   { transform: [{ scale: scaleAnim }] }
@@ -357,7 +353,7 @@ export default function CreateScreen() {
                   contentFit="cover"
                   transition={300}
                 />
-                
+
                 <View style={styles.imageOverlay}>
                   <TouchableOpacity
                     style={styles.changeImageButton}
@@ -389,7 +385,7 @@ export default function CreateScreen() {
                     <Text style={styles.userHandle}>@{user?.username || 'user'}</Text>
                   </View>
                 </View>
-                
+
                 <View style={styles.inputWrapper}>
                   <TextInput
                     style={styles.captionInput}

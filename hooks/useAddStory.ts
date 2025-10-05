@@ -1,5 +1,5 @@
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { Platform } from 'react-native';
 import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
@@ -33,7 +33,6 @@ export function useAddStory() {
     } else {
       const uploadRes = await FileSystem.uploadAsync(uploadUrl, asset.uri, {
         httpMethod: 'POST',
-        uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
       });
       storageId = JSON.parse(uploadRes.body).storageId;
     }

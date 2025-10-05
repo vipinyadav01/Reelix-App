@@ -43,6 +43,7 @@ export default function StoryViewer() {
   if (stories.length === 0) return (
     <View style={styles.containerCenter}>
       <StatusBar barStyle="light-content" />
+      <Ionicons name="images-outline" size={64} color={COLORS.gray} />
       <Text style={styles.emptyText}>No active stories</Text>
       <TouchableOpacity onPress={() => router.back()} style={styles.closeButtonTouch}>
         <Ionicons name="close" size={28} color={COLORS.white} />

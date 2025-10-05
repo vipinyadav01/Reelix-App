@@ -216,7 +216,7 @@ export default function Profile() {
 function NoPostsFound() {
   return (
     <View style={styles.emptyPostsContainer}>
-      <Ionicons name="images-outline" size={64} color={COLORS.gray} />
+      <Ionicons name="images-outline" size={48} color={COLORS.gray} />
       <Text style={styles.emptyPostsText}>No posts yet</Text>
       <Text style={styles.emptyPostsSubtext}>Share your first moment with the world!</Text>
     </View>

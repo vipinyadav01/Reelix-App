@@ -254,7 +254,7 @@ export default function ProfileScreen() {
             </View>
           ) : (
             <View style={styles.emptyPostsContainer}>
-              <Ionicons name="images" size={48} color={COLORS.gray} />
+              <Ionicons name="images-outline" size={48} color={COLORS.gray} />
               <Text style={styles.emptyPostsText}>
                 {isOwnProfile ? 'No posts yet' : 'No posts to show'}
               </Text>

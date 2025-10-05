@@ -99,7 +99,7 @@ export default function TabLayout() {
               focused={focused}
               color={color}
               size={focused ? size + 4 : size}
-               badgeCount={unreadCount} // Show badge here
+              badgeCount={unreadCount}
             />
           ),
         }}

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Animated, RefreshControl, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNotificationsSimple as useNotifications } from '@/hooks/useNotificationsSimple';
 import { COLORS } from '@/constants/theme';
@@ -22,9 +22,7 @@ export default function NotificationScreen() {
     unreadCount = 0, 
     markAsRead, 
     markAllAsRead, 
-    clearNotifications,
-    scheduleTestNotification,
-    addMultipleSampleNotifications 
+    clearNotifications
   } = useNotifications() || {};
 
   const [showDropdown, setShowDropdown] = useState(false);
@@ -212,29 +210,7 @@ export default function NotificationScreen() {
     }
   }, [clearNotifications]);
 
-  const handleTestNotification = useCallback(() => {
-    try {
-      if (scheduleTestNotification && typeof scheduleTestNotification === 'function') {
-        scheduleTestNotification();
-      }
-      setShowDropdown(false);
-    } catch (error) {
-      console.error('Error adding test notification:', error);
-      Alert.alert('Error', 'Failed to add test notification');
-    }
-  }, [scheduleTestNotification]);
 
-  const handleAddMultipleNotifications = useCallback(() => {
-    try {
-      if (addMultipleSampleNotifications && typeof addMultipleSampleNotifications === 'function') {
-        addMultipleSampleNotifications();
-      }
-      setShowDropdown(false);
-    } catch (error) {
-      console.error('Error adding multiple notifications:', error);
-      Alert.alert('Error', 'Failed to add notifications');
-    }
-  }, [addMultipleSampleNotifications]);
 
   const toggleDropdown = useCallback(() => {
     setShowDropdown(prev => !prev);
@@ -411,15 +387,6 @@ export default function NotificationScreen() {
 
             <View style={styles.dropdownDivider} />
 
-            <TouchableOpacity style={styles.dropdownItem} onPress={handleTestNotification}>
-              <Ionicons name="add-circle" size={20} color={COLORS.primary} />
-              <Text style={styles.dropdownText}>Add Random Notification</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.dropdownItem} onPress={handleAddMultipleNotifications}>
-              <Ionicons name="notifications" size={20} color={COLORS.primary} />
-              <Text style={styles.dropdownText}>Add Sample Notifications</Text>
-            </TouchableOpacity>
           </View>
         </View>
       )}
@@ -439,9 +406,9 @@ export default function NotificationScreen() {
         {totalCount === 0 ? (
           <View style={styles.emptyState}>
             <Ionicons 
-              name={filter === 'unread' ? "checkmark-circle" : "notifications-outline"} 
+              name={filter === 'unread' ? "checkmark-circle-outline" : "notifications-outline"} 
               size={64} 
-              color="rgba(255, 255, 255, 0.3)" 
+              color={COLORS.gray} 
             />
             <Text style={styles.emptyText}>
               {filter === 'unread' ? "You're all caught up!" : 'No notifications yet'}
@@ -449,7 +416,7 @@ export default function NotificationScreen() {
             <Text style={styles.emptySubtext}>
               {filter === 'unread' 
                 ? 'Check back later for new notifications'
-                : 'Tap the menu (⋮) to create a test notification'}
+                : 'Check back later for new notifications'}
             </Text>
           </View>
         ) : (
