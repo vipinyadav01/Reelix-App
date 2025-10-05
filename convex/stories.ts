@@ -143,8 +143,125 @@ export const markStoryAsViewed = mutation({
         viewerId: currentUser._id,
         authorId: args.authorId,
         lastViewedAt: Date.now(),
+        replayCount: 0,
       });
     }
+  },
+});
+
+export const recordImpression = mutation({
+  args: { authorId: v.id("users") },
+  handler: async (ctx, args) => {
+    const currentUser = await getAuthenticatedUser(ctx);
+    const now = Date.now();
+    const cutoff = now - ONE_DAY_MS;
+    const date = new Date(now);
+    const bucket = `${date.getUTCFullYear()}${String(date.getUTCMonth() + 1).padStart(2, '0')}${String(date.getUTCDate()).padStart(2, '0')}`;
+
+    const view = await ctx.db
+      .query("storyViews")
+      .withIndex("by_viewer", (q) => q.eq("viewerId", currentUser._id))
+      .filter((q) => q.eq(q.field("authorId"), args.authorId))
+      .first();
+
+    let isReach = false;
+    if (!view) {
+      await ctx.db.insert("storyViews", {
+        viewerId: currentUser._id,
+        authorId: args.authorId,
+        lastViewedAt: now,
+        replayCount: 0,
+      });
+      isReach = true;
+    } else {
+      const withinWindow = view.lastViewedAt >= cutoff;
+      if (!withinWindow) isReach = true;
+      await ctx.db.patch(view._id, { lastViewedAt: now });
+    }
+
+    const metrics = await ctx.db
+      .query("storyMetrics")
+      .withIndex("by_author_and_date", (q) => q.eq("authorId", args.authorId).eq("dateBucket", bucket))
+      .first();
+    if (!metrics) {
+      await ctx.db.insert("storyMetrics", {
+        authorId: args.authorId,
+        dateBucket: bucket,
+        impressions: 1,
+        reach: isReach ? 1 : 0,
+        tapsForward: 0,
+        tapsBack: 0,
+      });
+    } else {
+      await ctx.db.patch(metrics._id, {
+        impressions: metrics.impressions + 1,
+        reach: metrics.reach + (isReach ? 1 : 0),
+      });
+    }
+  },
+});
+
+export const recordTap = mutation({
+  args: { authorId: v.id("users"), direction: v.union(v.literal('forward'), v.literal('back')) },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    const date = new Date(now);
+    const bucket = `${date.getUTCFullYear()}${String(date.getUTCMonth() + 1).padStart(2, '0')}${String(date.getUTCDate()).padStart(2, '0')}`;
+
+    const metrics = await ctx.db
+      .query("storyMetrics")
+      .withIndex("by_author_and_date", (q) => q.eq("authorId", args.authorId).eq("dateBucket", bucket))
+      .first();
+    if (!metrics) {
+      await ctx.db.insert("storyMetrics", {
+        authorId: args.authorId,
+        dateBucket: bucket,
+        impressions: 0,
+        reach: 0,
+        tapsForward: args.direction === 'forward' ? 1 : 0,
+        tapsBack: args.direction === 'back' ? 1 : 0,
+      });
+    } else {
+      await ctx.db.patch(metrics._id, {
+        tapsForward: metrics.tapsForward + (args.direction === 'forward' ? 1 : 0),
+        tapsBack: metrics.tapsBack + (args.direction === 'back' ? 1 : 0),
+      });
+    }
+
+    if (args.direction === 'back') {
+      const currentUser = await getAuthenticatedUser(ctx);
+      const existingView = await ctx.db
+        .query("storyViews")
+        .withIndex("by_viewer", (q) => q.eq("viewerId", currentUser._id))
+        .filter((q) => q.eq(q.field("authorId"), args.authorId))
+        .first();
+      if (existingView) {
+        await ctx.db.patch(existingView._id, { replayCount: (existingView.replayCount ?? 0) + 1 });
+      }
+    }
+  },
+});
+
+export const getStoryViewers = query({
+  args: { authorId: v.id("users") },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    const cutoff = now - ONE_DAY_MS;
+    const views = await ctx.db
+      .query("storyViews")
+      .withIndex("by_author", (q) => q.eq("authorId", args.authorId))
+      .collect();
+    const recent = views.filter(vw => vw.lastViewedAt >= cutoff);
+    const users = await Promise.all(recent.map(vw => ctx.db.get(vw.viewerId)));
+    const items = recent.map((vw, i) => ({
+      viewerId: vw.viewerId,
+      replayCount: vw.replayCount ?? 0,
+      lastViewedAt: vw.lastViewedAt,
+      username: (users[i] as any)?.username,
+      avatar: (users[i] as any)?.image,
+    }));
+    const totalReplays = items.reduce((acc, it) => acc + (it.replayCount || 0), 0);
+    return { count: items.length, totalReplays, viewers: items };
   },
 });
 

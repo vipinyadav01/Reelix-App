@@ -74,7 +74,17 @@ export default defineSchema({
         viewerId: v.id("users"),
         authorId: v.id("users"),
         lastViewedAt: v.number(),
+        replayCount: v.optional(v.number()),
     }).index("by_viewer", ["viewerId"]).index("by_author", ["authorId"]).index("by_viewer_and_author", ["viewerId","authorId"]),
+
+    storyMetrics: defineTable({
+        authorId: v.id("users"),
+        dateBucket: v.string(),
+        impressions: v.number(),
+        reach: v.number(),
+        tapsForward: v.number(),
+        tapsBack: v.number(),
+    }).index("by_author_and_date", ["authorId","dateBucket"]),
 
     followRequests: defineTable({
         followerId: v.id("users"),

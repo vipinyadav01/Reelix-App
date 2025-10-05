@@ -12,15 +12,16 @@ const StoriesSection = () => {
   const addStory = useAddStory();
   const liveStories = useQuery(api.stories.getStoriesFeed);
   let data = liveStories && liveStories.length > 0 ? liveStories : STORIES;
-  if (user && (!liveStories || liveStories.length === 0)) {
+  if (user) {
+    const existingMe = liveStories?.find((s: any) => String(s.id) === String(user.id));
     const me = {
       id: user.id,
       username: user.username || user.firstName || 'You',
       avatar: user.imageUrl || '',
-      hasStory: false,
+      hasStory: existingMe ? existingMe.hasStory : false,
       onAdd: addStory,
     } as any;
-    data = [me, ...data.filter((s) => s.username !== me.username)];
+    data = [me, ...data.filter((s: any) => String(s.id) !== String(me.id))];
   }
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.storiesContainer}>

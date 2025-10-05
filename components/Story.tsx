@@ -38,7 +38,7 @@ export default function Story({ story }: { story: Story }) {
         story.viewed && styles.viewedStory
       ]}>
         <Image source={{ uri: story.avatar }} style={styles.storyAvatar} />
-        {!story.hasStory && story.onAdd && (
+        {story.onAdd && (
           <View style={{ position: 'absolute', bottom: -2, right: -2, backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: 4, paddingVertical: 0 }}>
             <Text style={{ color: '#000', fontSize: 12 }}>+</Text>
           </View>

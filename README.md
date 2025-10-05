@@ -90,14 +90,27 @@ convex/
 ├── user.ts          # User-related queries/mutations
 ├── posts.ts         # Posts functionality
 └── stories.ts       # Stories system
+
+## 🧭 Where to find features
+
+- Stories bar: `app/(tabs)/index.tsx` via `components/Stories.tsx`
+- Story circle: `components/Story.tsx` (always shows + for your profile)
+- Add story flow: `hooks/useAddStory.ts` (camera or gallery upload)
+- Story viewer: `app/story/[id].tsx` (tap/hold navigation, viewers sheet)
+- Backend:
+  - `convex/schema.ts` (tables: stories, storyViews, storyMetrics)
+  - `convex/stories.ts` (queries/mutations: upload, metrics, viewers)
 ```
 
 ## 🔧 Key Features Implementation
 
 ### Real-time Stories
-- Stories with 24-hour expiration
-- View tracking and unhighlighting after viewing
-- Smooth animations and transitions
+- 24-hour expiration with backend filtering
+- Always-visible add button on your story circle
+- Add story from Camera or Gallery (image/video)
+- Viewer list (author-only): usernames, view count, and replays
+- Engagement metrics (impressions, reach, taps forward/back)
+- Smooth viewer: tap right/left to navigate, long-press to pause/seek
 
 ### User Profiles
 - Dynamic profile pages for any user

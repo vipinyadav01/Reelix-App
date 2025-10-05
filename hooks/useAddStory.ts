@@ -1,6 +1,6 @@
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
-import { Platform } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 
@@ -8,19 +8,32 @@ export function useAddStory() {
   const generateUploadUrl = useMutation(api.stories.generateUploadUrl);
   const createStory = useMutation(api.stories.createStory);
 
-  return async function addStory() {
+  async function pickAndUpload(source: 'gallery' | 'camera') {
+    if (source === 'camera') {
+      const perm = await ImagePicker.requestCameraPermissionsAsync();
+      if (perm.status !== 'granted') return;
+      const res = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        quality: 0.9,
+      });
+      if (res.canceled) return;
+      await uploadAsset(res.assets[0]);
+      return;
+    }
+    const libPerm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (libPerm.status !== 'granted') return;
     const res = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       quality: 0.9,
     });
     if (res.canceled) return;
+    await uploadAsset(res.assets[0]);
+  }
 
-    const asset = res.assets[0];
+  async function uploadAsset(asset: ImagePicker.ImagePickerAsset) {
     const mediaType = asset.type === 'video' ? 'video' : 'image';
-
     const uploadUrl = await generateUploadUrl();
     let storageId: string;
-
     if (Platform.OS === 'web') {
       const blob = await (await fetch(asset.uri)).blob();
       const resp = await fetch(uploadUrl, {
@@ -36,12 +49,23 @@ export function useAddStory() {
       });
       storageId = JSON.parse(uploadRes.body).storageId;
     }
+    await createStory({ storageId: storageId as any, mediaType, caption: '' });
+  }
 
-    await createStory({
-      storageId: storageId as any,
-      mediaType,
-      caption: '',
-    });
+  return async function addStory(opts?: { source?: 'gallery' | 'camera' }) {
+    if (opts?.source) {
+      await pickAndUpload(opts.source);
+      return;
+    }
+    Alert.alert(
+      'Add Story',
+      'Choose source',
+      [
+        { text: 'Camera', onPress: () => pickAndUpload('camera') },
+        { text: 'Gallery', onPress: () => pickAndUpload('gallery') },
+        { text: 'Cancel', style: 'cancel' },
+      ]
+    );
   };
 }
 
