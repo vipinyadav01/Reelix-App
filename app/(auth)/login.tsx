@@ -4,14 +4,14 @@ import { styles } from '@/styles/auth.styles'
 import { Ionicons } from '@expo/vector-icons'
 import { COLORS } from '@/constants/theme'
 import { useSSO, useAuth } from '@clerk/clerk-expo'
-import { useRouter, useSegments } from 'expo-router'
+import { useRouter } from 'expo-router'
 
 export default function Login() {
     const [isLoading, setIsLoading] = useState(false)
     const { startSSOFlow } = useSSO()
     const { isLoaded, isSignedIn } = useAuth()
     const router = useRouter()
-    const segments = useSegments()
+    
     const loginAttemptRef = useRef(false)
     useEffect(() => {
         if (!isLoaded) return
@@ -66,7 +66,7 @@ export default function Login() {
             await new Promise(resolve => setTimeout(resolve, 800))
             router.replace("/(tabs)")
             
-        } catch (error) {
+        } catch {
             
         } finally {
             setIsLoading(false);

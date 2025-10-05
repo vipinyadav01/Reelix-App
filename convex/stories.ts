@@ -96,7 +96,19 @@ export const getUserStories = query({
   },
 });
 
-// Client-friendly upload flow
+export const deleteStory = mutation({
+  args: { storyId: v.id("stories") },
+  handler: async (ctx, args) => {
+    const currentUser = await getAuthenticatedUser(ctx);
+    const story = await ctx.db.get(args.storyId);
+    if (!story) throw new Error("Story not found");
+    if (String(story.userId) !== String(currentUser._id)) {
+      throw new Error("Not authorized to delete this story");
+    }
+    await ctx.db.delete(args.storyId);
+  },
+});
+
 export const generateUploadUrl = mutation({
   args: {},
   handler: async (ctx) => {

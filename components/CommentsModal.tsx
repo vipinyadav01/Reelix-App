@@ -16,7 +16,7 @@ import {
   TextInput,
 } from "react-native";
 import { Loader } from "./Loader";
-import Comment from "./Comment";
+import CommentItem from "./Comment";
 
 type CommentsModal = {
   postId: Id<"posts">;
@@ -64,7 +64,7 @@ export default function CommentsModal({ onClose, postId, visible }: CommentsModa
           <FlatList
             data={comments}
             keyExtractor={(item) => item._id}
-            renderItem={({ item }) => <Comment comment={item} />}
+            renderItem={({ item }) => <CommentItem comment={item} />}
             contentContainerStyle={styles.commentsList}
           />
         )}

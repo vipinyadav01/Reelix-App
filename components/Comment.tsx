@@ -11,7 +11,7 @@ interface Comment {
   };
 }
 
-export default function Comment({ comment }: { comment: Comment }) {
+export default function CommentItem({ comment }: { comment: Comment }) {
   return (
     <View style={styles.commentContainer}>
       <Image source={{ uri: comment.user.image }} style={styles.commentAvatar} />

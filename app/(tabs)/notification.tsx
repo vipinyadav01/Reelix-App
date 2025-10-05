@@ -6,14 +6,14 @@ import { COLORS } from '@/constants/theme';
 
 interface NotificationGroup {
   title: string;
-  notifications: Array<{
+  notifications: {
     id: string;
     title: string;
     body: string;
     type: string;
     read: boolean;
     timestamp: number;
-  }>;
+  }[];
 }
 
 export default function NotificationScreen() {

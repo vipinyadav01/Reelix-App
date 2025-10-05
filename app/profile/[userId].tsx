@@ -32,7 +32,6 @@ export default function ProfileScreen() {
     profileData,
     isLoading,
     error,
-    followStatus,
     isOwnProfile,
     handleFollowToggle,
     handleRefresh,

@@ -1,10 +1,9 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '@/constants/theme';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, useColorScheme } from 'react-native';
 import { useNotificationsSimple as useNotifications } from '@/hooks/useNotificationsSimple';
 
-// Custom component for tab icons with badges
 const TabBarIcon = ({ 
   iconName, 
   focused, 
@@ -18,17 +17,25 @@ const TabBarIcon = ({
   size: number;
   badgeCount?: number;
 }) => {
+  const scheme = useColorScheme();
+  const isDark = scheme === 'dark';
   return (
     <View style={styles.tabIconContainer}>
       <Ionicons
         name={iconName as any}
         size={size}
-        color={focused ? COLORS.primary : color}
-        style={focused ? styles.iconActive : undefined}
+        color={color}
+        style={focused ? styles.iconActive : styles.iconInactive}
       />
       {badgeCount !== undefined && badgeCount > 0 && (
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>
+        <View style={[
+          styles.badge,
+          { borderColor: isDark ? 'rgba(20, 20, 20, 0.92)' : 'rgba(255, 255, 255, 0.85)' }
+        ]}>
+          <Text style={[
+            styles.badgeText,
+            { color: isDark ? COLORS.white : COLORS.black }
+          ]}>
             {badgeCount > 99 ? '99+' : badgeCount}
           </Text>
         </View>
@@ -38,7 +45,8 @@ const TabBarIcon = ({
 };
 
 export default function TabLayout() {
-  // Get real notification count from the hook
+  const scheme = useColorScheme();
+  const isDark = scheme === 'dark';
   const { unreadCount } = useNotifications();
   
   return (
@@ -46,9 +54,15 @@ export default function TabLayout() {
       screenOptions={{
         tabBarShowLabel: false,
         headerShown: false,
-        tabBarActiveTintColor: COLORS.white,
-        tabBarInactiveTintColor: 'rgba(255, 255, 255, 0.5)',
-        tabBarStyle: styles.tabBar,
+        tabBarActiveTintColor: isDark ? COLORS.white : COLORS.black,
+        tabBarInactiveTintColor: isDark ? 'rgba(255, 255, 255, 0.55)' : 'rgba(0, 0, 0, 0.55)',
+        tabBarStyle: [
+          styles.tabBar,
+          {
+            backgroundColor: isDark ? 'rgba(20, 20, 20, 0.92)' : 'rgba(255, 255, 255, 0.9)',
+            borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'
+          }
+        ],
       }}
     >
       <Tabs.Screen

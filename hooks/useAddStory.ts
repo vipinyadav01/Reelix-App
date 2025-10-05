@@ -13,7 +13,7 @@ export function useAddStory() {
       const perm = await ImagePicker.requestCameraPermissionsAsync();
       if (perm.status !== 'granted') return;
       const res = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        mediaTypes: ['images', 'videos'] as any,
         quality: 0.9,
       });
       if (res.canceled) return;
@@ -23,7 +23,7 @@ export function useAddStory() {
     const libPerm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (libPerm.status !== 'granted') return;
     const res = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      mediaTypes: ['images', 'videos'] as any,
       quality: 0.9,
     });
     if (res.canceled) return;

@@ -13,7 +13,6 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  FlatList,
   Modal,
   TouchableWithoutFeedback,
   Keyboard,

@@ -24,7 +24,7 @@ import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import * as FileSystem from 'expo-file-system/legacy';
 
-const { width } = Dimensions.get('window');
+// const { width } = Dimensions.get('window');
 
 export default function CreateScreen() {
   const router = useRouter();
@@ -57,7 +57,7 @@ export default function CreateScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+  }, [fadeAnim, slideAnim, scaleAnim]);
 
   const pickImage = async () => {
     try {
@@ -73,7 +73,7 @@ export default function CreateScreen() {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'] as any,
         aspect: [1, 1],
         quality: 0.8,
         allowsEditing: true,

@@ -13,7 +13,7 @@ type Story = {
   onAdd?: () => Promise<void> | void;
 };
 
-export default function Story({ story }: { story: Story }) {
+export default function StoryItem({ story }: { story: Story }) {
   const router = useRouter();
   const markAsViewed = useMutation(api.stories.markStoryAsViewed);
   

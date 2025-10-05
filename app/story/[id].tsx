@@ -2,18 +2,13 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, Text, StatusBar, TouchableOpacity, StyleSheet, PanResponder, Animated } from 'react-native';
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { Image } from 'expo-image';
-let Video: any;
-try {
-  Video = require('expo-av').Video;
-} catch (e) {
-  Video = null;
-  console.warn("expo-av is not installed. Video playback will be disabled.");
-}
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '@/constants/theme';
 import { useAuth } from '@clerk/clerk-expo';
+
 
 
 export default function StoryViewer() {
@@ -30,6 +25,7 @@ export default function StoryViewer() {
   const me = useQuery(api.user.getUserByClerkId, clerkUserId ? { clerkId: clerkUserId } : 'skip');
   const recordImpression = useMutation(api.stories.recordImpression);
   const recordTap = useMutation(api.stories.recordTap);
+  const deleteStoryMutation = useMutation(api.stories.deleteStory);
   const viewersData = useQuery(
     api.stories.getStoryViewers,
     me && resolvedConvexUserId && String(me._id) === String(resolvedConvexUserId)
@@ -41,56 +37,112 @@ export default function StoryViewer() {
   const [isPaused, setIsPaused] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const holdIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const videoRef = useRef(null); // Ref for the Video component
+  const videoRef = useRef<VideoView | null>(null);
 
-  // Animated value for swipe up gesture, though not fully implemented for animation in this example
   const translateY = useRef(new Animated.Value(0)).current;
+  const segmentProgress = useRef(new Animated.Value(0)).current;
+
+  const player = useVideoPlayer('');
+
+  const current = stories && stories.length > 0 ? stories[index] : undefined;
+
+  useEffect(() => {
+    if (!player) return;
+    let cancelled = false;
+    (async () => {
+      if (current?.mediaType === 'video' && current.imageUrl) {
+        try {
+          await player.replaceAsync(current.imageUrl);
+          if (cancelled) return;
+          if (isPaused) {
+            player.pause();
+          } else {
+            player.play();
+          }
+        } catch {}
+      } else {
+        player.pause();
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [player, current?.mediaType, current?.imageUrl, isPaused]);
 
   useEffect(() => {
     if (!stories || stories.length === 0) return;
-    if (isPaused) return;
 
-    if (resolvedConvexUserId) {
+    if (!isPaused && resolvedConvexUserId) {
       recordImpression({ authorId: resolvedConvexUserId as any }).catch((err) =>
         console.error("Failed to record impression:", err)
       );
     }
 
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      if (index < stories.length - 1) {
-        setIndex((i) => i + 1);
-      } else {
-        router.back();
-      }
-    }, 5000);
+    segmentProgress.stopAnimation();
+    segmentProgress.setValue(0);
+
+    if (!isPaused) {
+      Animated.timing(segmentProgress, {
+        toValue: 1,
+        duration: 5000,
+        useNativeDriver: false,
+      }).start(({ finished }) => {
+        if (!finished) return;
+        if (stories && index < stories.length - 1) {
+          setIndex((i) => i + 1);
+        } else {
+          router.back();
+        }
+      });
+    }
 
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      segmentProgress.stopAnimation();
     };
-  }, [stories, index, isPaused, resolvedConvexUserId, router]);
+  }, [stories, index, isPaused, resolvedConvexUserId, router, segmentProgress]);
 
-  // PanResponder for swipe up gesture to show viewers
+  useEffect(() => {
+    if (isPaused) {
+      segmentProgress.stopAnimation();
+      return;
+    }
+    segmentProgress.stopAnimation((val?: number) => {
+      const remaining = Math.max(0, 1 - (typeof val === 'number' ? val : 0));
+      if (remaining === 0) return;
+      Animated.timing(segmentProgress, {
+        toValue: 1,
+        duration: remaining * 5000,
+        useNativeDriver: false,
+      }).start(({ finished }) => {
+        if (!finished) return;
+        if (stories && index < stories.length - 1) {
+          setIndex((i) => i + 1);
+        } else {
+          router.back();
+        }
+      });
+    });
+  }, [isPaused]);
+
   const panResponder = useMemo(() => PanResponder.create({
     onStartShouldSetPanResponder: (evt, gestureState) => true,
     onMoveShouldSetPanResponder: (evt, gestureState) => {
-      // Only respond to vertical swipes
       return Math.abs(gestureState.dy) > Math.abs(gestureState.dx) && gestureState.dy < -5;
     },
     onPanResponderGrant: (evt, gestureState) => {
-      translateY.setValue(0); // Reset for new gesture
+      translateY.setValue(0);
     },
     onPanResponderMove: (evt, gestureState) => {
-      if (gestureState.dy < 0) { // Only allow swiping up
+      if (gestureState.dy < 0) {
         translateY.setValue(gestureState.dy);
       }
     },
     onPanResponderRelease: (evt, gestureState) => {
-      if (gestureState.dy < -50) { // If swiped up more than 50 pixels
+      if (gestureState.dy < -50) {
         setShowViewers(true);
         setIsPaused(true);
         Animated.timing(translateY, {
-          toValue: -200, // Or whatever height your modal is
+          toValue: -200,
           duration: 300,
           useNativeDriver: true,
         }).start();
@@ -117,42 +169,86 @@ export default function StoryViewer() {
     </View>
   );
 
-  const current = stories[index];
+
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-      {current.mediaType === 'video' && Video ? (
-        <Video
+      {current && current.mediaType === 'video' ? (
+        <VideoView
           ref={videoRef}
-          source={{ uri: current.imageUrl }}
           style={styles.media}
-          resizeMode="contain"
-          shouldPlay={!isPaused}
-          isLooping={false}
-          onPlaybackStatusUpdate={(status: any) => {
-            if (status.isLoaded && status.didJustFinish) {
-              if (index < stories.length - 1) {
-                setIndex((i) => i + 1);
-              } else {
-                router.back();
-              }
-            }
-          }}
+          player={player}
+          contentFit="contain"
         />
       ) : (
-        <Image source={{ uri: current.imageUrl }} style={styles.media} contentFit="contain" />
+        current ? (
+          <Image source={{ uri: current.imageUrl }} style={styles.media} contentFit="contain" />
+        ) : null
       )}
 
       <View style={styles.topBar}>
         <View style={styles.progressContainer}>
-          {stories.map((_, i) => (
-            <View key={i} style={[styles.progressSegment, i <= index && styles.progressSegmentActive]} />
-          ))}
+          {stories.map((_, i) => {
+            if (i < index) {
+              return (
+                <View key={i} style={styles.progressBarWrapper}>
+                  <View style={[styles.progressBarTrack]} />
+                  <View style={[styles.progressBarFill, { width: '100%' }]} />
+                </View>
+              );
+            }
+            if (i === index) {
+              return (
+                <View key={i} style={styles.progressBarWrapper}>
+                  <View style={[styles.progressBarTrack]} />
+                  <Animated.View
+                    style={[
+                      styles.progressBarFill,
+                      {
+                        width: segmentProgress.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0%', '100%'],
+                          extrapolate: 'clamp',
+                        }),
+                      },
+                    ]}
+                  />
+                </View>
+              );
+            }
+            return (
+              <View key={i} style={styles.progressBarWrapper}>
+                <View style={[styles.progressBarTrack]} />
+                <View style={[styles.progressBarFill, { width: '0%' }]} />
+              </View>
+            );
+          })}
         </View>
         <TouchableOpacity onPress={() => router.back()} style={styles.closeButtonTouch}>
           <Ionicons name="close" size={24} color={COLORS.white} />
         </TouchableOpacity>
+        {isLikelyConvexId && me && resolvedConvexUserId && String(me._id) === String(resolvedConvexUserId) && (
+          <TouchableOpacity
+            onPress={async () => {
+              if (!current) return;
+              try {
+                await deleteStoryMutation({ storyId: current._id as any });
+                if (index < (stories?.length || 1) - 1) {
+                  setIndex((i) => i + 1);
+                } else {
+                  router.back();
+                }
+              } catch (e) {
+                console.error('Failed to delete story', e);
+              }
+            }}
+            style={styles.closeButtonTouch}
+            accessibilityLabel="Delete story"
+          >
+            <Ionicons name="trash" size={22} color="#ef4444" />
+          </TouchableOpacity>
+        )}
       </View>
 
       <View style={styles.navZones}>
@@ -215,7 +311,7 @@ export default function StoryViewer() {
         <Animated.View
           style={[
             styles.swipeUpArea,
-            { transform: [{ translateY: translateY }] } // Apply animation here if needed
+            { transform: [{ translateY: translateY }] }
           ]}
           {...panResponder.panHandlers}
         />
@@ -239,7 +335,7 @@ export default function StoryViewer() {
                     <Image source={{ uri: v.avatar }} style={styles.viewerAvatar} contentFit="cover" />
                   ) : (
                     <View style={styles.viewerAvatarFallback}>
-                        <Ionicons name="person" size={24} color={COLORS.white} />
+                      <Ionicons name="person" size={24} color={COLORS.white} />
                     </View>
                   )}
                   <View style={styles.viewerInfo}>
@@ -285,7 +381,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    zIndex: 100, // Ensure topBar is above other elements
+    zIndex: 100,
   },
   progressContainer: {
     flex: 1,
@@ -293,14 +389,25 @@ const styles = StyleSheet.create({
     gap: 4,
     marginRight: 12,
   },
-  progressSegment: {
+  progressBarWrapper: {
     flex: 1,
     height: 3,
+    borderRadius: 2,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  progressBarTrack: {
+    ...StyleSheet.absoluteFillObject as any,
     backgroundColor: 'rgba(255,255,255,0.3)',
     borderRadius: 2,
   },
-  progressSegmentActive: {
+  progressBarFill: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
     backgroundColor: COLORS.white,
+    borderRadius: 2,
   },
   closeButtonTouch: {
     padding: 6,
@@ -330,7 +437,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: 'center',
-    zIndex: 30, // Ensure handle is above media
+    zIndex: 30,
   },
   viewerHandle: {
     alignItems: 'center',
@@ -354,7 +461,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     justifyContent: 'flex-end',
-    zIndex: 50, // Ensure modal is on top
+    zIndex: 50,
   },
   modalBackdrop: {
     ...StyleSheet.absoluteFillObject as any,
@@ -365,7 +472,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     paddingBottom: 24,
-    maxHeight: '70%', // Limit height to avoid overflowing content
+    maxHeight: '70%',
   },
   viewersHeader: {
     flexDirection: 'row',
@@ -410,13 +517,13 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   viewerAvatarFallback: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
-      backgroundColor: 'rgba(255,255,255,0.15)',
-      marginRight: 12,
-      justifyContent: 'center',
-      alignItems: 'center',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    marginRight: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   viewerInfo: {
     flex: 1,
