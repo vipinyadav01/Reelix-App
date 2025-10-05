@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS } from '@/constants/theme';
 import { StyleSheet, View, Text, useColorScheme } from 'react-native';
 import { useNotificationsSimple as useNotifications } from '@/hooks/useNotificationsSimple';
@@ -21,7 +21,7 @@ const TabBarIcon = ({
   const isDark = scheme === 'dark';
   return (
     <View style={styles.tabIconContainer}>
-      <Ionicons
+        <MaterialCommunityIcons
         name={iconName as any}
         size={size}
         color={color}
@@ -96,7 +96,7 @@ export default function TabLayout() {
         options={{
           tabBarIcon: ({ size, color, focused }) => (
             <TabBarIcon
-              iconName={focused ? 'add-circle' : 'add-circle-outline'}
+              iconName={focused ? 'plus-circle' : 'plus-circle-outline'}
               focused={focused}
               color={color}
               size={focused ? size + 8 : size + 4}
@@ -123,7 +123,7 @@ export default function TabLayout() {
         options={{
           tabBarIcon: ({ size, color, focused }) => (
             <TabBarIcon
-              iconName={focused ? 'person' : 'person-outline'}
+              iconName={focused ? 'account' : 'account-outline'}
               focused={focused}
               color={color}
               size={focused ? size + 4 : size}

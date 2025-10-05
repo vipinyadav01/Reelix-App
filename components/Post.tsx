@@ -2,7 +2,7 @@ import { COLORS } from "@/constants/theme";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { styles } from "@/styles/feed.styles";
-import { Ionicons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import { Image } from "expo-image";
 import { Link, useRouter } from "expo-router";
@@ -98,19 +98,19 @@ export default function Post({ post }: PostProps) {
         </TouchableOpacity>
         <View>
           <TouchableOpacity onPress={() => setShowMenu((v) => !v)}>
-            <Ionicons name="ellipsis-horizontal" size={20} color={COLORS.white} />
+            <MaterialCommunityIcons name="dots-horizontal" size={20} color={COLORS.white} />
           </TouchableOpacity>
           {showMenu && (
             <View style={{ position: 'absolute', top: 24, right: 0, backgroundColor: '#1a1a1a', borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', paddingVertical: 6, minWidth: 140, zIndex: 100 }}>
               {post.author._id === currentUser?._id && (
                 <TouchableOpacity onPress={handleEdit} style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 8 }}>
-                  <Ionicons name="create-outline" size={18} color={COLORS.white} />
+                  <MaterialCommunityIcons name="pencil-outline" size={18} color={COLORS.white} />
                   <Text style={{ color: COLORS.white, marginLeft: 8 }}>Edit</Text>
                 </TouchableOpacity>
               )}
               {post.author._id === currentUser?._id && (
                 <TouchableOpacity onPress={handleDelete} style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 8 }}>
-                  <Ionicons name="trash-outline" size={18} color={COLORS.primary} />
+                  <MaterialCommunityIcons name="trash-can-outline" size={18} color={COLORS.primary} />
                   <Text style={{ color: COLORS.primary, marginLeft: 8 }}>Delete</Text>
                 </TouchableOpacity>
               )}
@@ -132,18 +132,18 @@ export default function Post({ post }: PostProps) {
       <View style={styles.postActions}>
         <View style={styles.postActionsLeft}>
           <TouchableOpacity onPress={handleLike}>
-            <Ionicons
+            <MaterialCommunityIcons
               name={isLiked ? "heart" : "heart-outline"}
               size={24}
               color={isLiked ? '#ef4444' : COLORS.white}
             />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setShowComments(true)}>
-            <Ionicons name="chatbubble-outline" size={22} color={COLORS.white} />
+            <MaterialCommunityIcons name="comment-outline" size={22} color={COLORS.white} />
           </TouchableOpacity>
         </View>
         <TouchableOpacity onPress={handleBookmark}>
-          <Ionicons
+          <MaterialCommunityIcons
             name={isBookmarked ? "bookmark" : "bookmark-outline"}
             size={22}
             color={COLORS.white}
