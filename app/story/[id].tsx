@@ -25,19 +25,22 @@ export default function StoryViewer() {
   const resolvedConvexUserId = isLikelyConvexId ? (id as any) : (clerkUser?._id as any | undefined);
   const stories = useQuery(api.stories.getUserStories, resolvedConvexUserId ? { userId: resolvedConvexUserId } : 'skip');
   const [index, setIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const holdIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (!stories || stories.length === 0) return;
-    timerRef.current && clearTimeout(timerRef.current);
+    if (isPaused) return;
+    if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       if (index < stories.length - 1) setIndex((i) => i + 1);
       else router.back();
     }, 5000);
     return () => {
-      timerRef.current && clearTimeout(timerRef.current);
+      if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [stories, index]);
+  }, [stories, index, isPaused]);
 
   if (!stories) return null;
   if (stories.length === 0) return (
@@ -60,7 +63,7 @@ export default function StoryViewer() {
           source={{ uri: current.imageUrl }}
           style={styles.media}
           resizeMode="contain"
-          shouldPlay
+          shouldPlay={!isPaused}
           isLooping={false}
           onPlaybackStatusUpdate={(status: any) => {
             if (status?.isLoaded && status?.didJustFinish) {
@@ -85,8 +88,44 @@ export default function StoryViewer() {
       </View>
 
       <View style={styles.navZones}>
-        <TouchableOpacity style={styles.navZone} onPress={() => setIndex((i) => Math.max(0, i - 1))} />
-        <TouchableOpacity style={styles.navZone} onPress={() => setIndex((i) => Math.min(stories.length - 1, i + 1))} />
+        <TouchableOpacity
+          style={styles.navZone}
+          onPress={() => setIndex((i) => Math.max(0, i - 1))}
+          onLongPress={() => {
+            setIsPaused(true);
+            if (holdIntervalRef.current) clearInterval(holdIntervalRef.current);
+            holdIntervalRef.current = setInterval(() => {
+              setIndex((i) => Math.max(0, i - 1));
+            }, 600);
+          }}
+          onPressOut={() => {
+            if (holdIntervalRef.current) {
+              clearInterval(holdIntervalRef.current);
+              holdIntervalRef.current = null;
+            }
+            setIsPaused(false);
+          }}
+          delayLongPress={200}
+        />
+        <TouchableOpacity
+          style={styles.navZone}
+          onPress={() => setIndex((i) => Math.min(stories.length - 1, i + 1))}
+          onLongPress={() => {
+            setIsPaused(true);
+            if (holdIntervalRef.current) clearInterval(holdIntervalRef.current);
+            holdIntervalRef.current = setInterval(() => {
+              setIndex((i) => Math.min(stories.length - 1, i + 1));
+            }, 600);
+          }}
+          onPressOut={() => {
+            if (holdIntervalRef.current) {
+              clearInterval(holdIntervalRef.current);
+              holdIntervalRef.current = null;
+            }
+            setIsPaused(false);
+          }}
+          delayLongPress={200}
+        />
       </View>
     </View>
   );
