@@ -11,17 +11,22 @@ const StoriesSection = () => {
   const { user } = useUser();
   const addStory = useAddStory();
   const liveStories = useQuery(api.stories.getStoriesFeed);
+  const meConvex = useQuery(api.user.getUserByClerkId, user?.id ? { clerkId: user.id } : 'skip');
   let data = liveStories && liveStories.length > 0 ? liveStories : STORIES;
   if (user) {
-    const existingMe = liveStories?.find((s: any) => String(s.id) === String(user.id));
+    const meId = (meConvex?._id as any) ? String(meConvex?._id as any) : null;
+    const existingMe = meId ? (liveStories || []).find((s: any) => String(s.id) === meId) : null;
     const me = {
-      id: user.id,
+      id: meId ?? `user_${user.id}`,
       username: user.username || user.firstName || 'You',
       avatar: user.imageUrl || '',
       hasStory: existingMe ? existingMe.hasStory : false,
       onAdd: addStory,
     } as any;
-    data = [me, ...data.filter((s: any) => String(s.id) !== String(me.id))];
+    data = [
+      me,
+      ...data.filter((s: any) => String(s.id) !== (meId ?? `user_${user.id}`) && s.username !== me.username),
+    ];
   }
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.storiesContainer}>

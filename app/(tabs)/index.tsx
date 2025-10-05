@@ -52,6 +52,10 @@ export default function Index() {
             <TouchableOpacity 
               style={styles.headerButton}
               activeOpacity={0.7}
+              onPress={() => Alert.alert('Search', 'Search is coming soon')}
+              accessibilityLabel="Search"
+              accessibilityHint="Opens search"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Ionicons name="search-outline" size={24} color={COLORS.white} />
             </TouchableOpacity>
@@ -59,6 +63,9 @@ export default function Index() {
               style={styles.headerButton}
               onPress={handleSignOut}
               activeOpacity={0.7}
+              accessibilityLabel="Sign out"
+              accessibilityHint="Signs you out of the app"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Ionicons name="log-out-outline" size={24} color={COLORS.white} />
             </TouchableOpacity>

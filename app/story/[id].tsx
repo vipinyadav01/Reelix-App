@@ -1,12 +1,13 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, Text, StatusBar, TouchableOpacity, StyleSheet } from 'react-native';
-import { useEffect, useRef, useState } from 'react';
+import { View, Text, StatusBar, TouchableOpacity, StyleSheet, PanResponder, Animated } from 'react-native';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { Image } from 'expo-image';
 let Video: any;
 try {
   Video = require('expo-av').Video;
 } catch (e) {
   Video = null;
+  console.warn("expo-av is not installed. Video playback will be disabled.");
 }
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
@@ -29,28 +30,80 @@ export default function StoryViewer() {
   const me = useQuery(api.user.getUserByClerkId, clerkUserId ? { clerkId: clerkUserId } : 'skip');
   const recordImpression = useMutation(api.stories.recordImpression);
   const recordTap = useMutation(api.stories.recordTap);
-  const viewersData = useQuery(api.stories.getStoryViewers, me && resolvedConvexUserId && String(me._id) === String(resolvedConvexUserId) ? { authorId: resolvedConvexUserId } : 'skip');
+  const viewersData = useQuery(
+    api.stories.getStoryViewers,
+    me && resolvedConvexUserId && String(me._id) === String(resolvedConvexUserId)
+      ? { authorId: resolvedConvexUserId }
+      : 'skip'
+  );
   const [showViewers, setShowViewers] = useState(false);
   const [index, setIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const holdIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const videoRef = useRef(null); // Ref for the Video component
+
+  // Animated value for swipe up gesture, though not fully implemented for animation in this example
+  const translateY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (!stories || stories.length === 0) return;
     if (isPaused) return;
+
     if (resolvedConvexUserId) {
-      recordImpression({ authorId: resolvedConvexUserId as any }).catch(() => {});
+      recordImpression({ authorId: resolvedConvexUserId as any }).catch((err) =>
+        console.error("Failed to record impression:", err)
+      );
     }
+
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
-      if (index < stories.length - 1) setIndex((i) => i + 1);
-      else router.back();
+      if (index < stories.length - 1) {
+        setIndex((i) => i + 1);
+      } else {
+        router.back();
+      }
     }, 5000);
+
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [stories, index, isPaused]);
+  }, [stories, index, isPaused, resolvedConvexUserId, router]);
+
+  // PanResponder for swipe up gesture to show viewers
+  const panResponder = useMemo(() => PanResponder.create({
+    onStartShouldSetPanResponder: (evt, gestureState) => true,
+    onMoveShouldSetPanResponder: (evt, gestureState) => {
+      // Only respond to vertical swipes
+      return Math.abs(gestureState.dy) > Math.abs(gestureState.dx) && gestureState.dy < -5;
+    },
+    onPanResponderGrant: (evt, gestureState) => {
+      translateY.setValue(0); // Reset for new gesture
+    },
+    onPanResponderMove: (evt, gestureState) => {
+      if (gestureState.dy < 0) { // Only allow swiping up
+        translateY.setValue(gestureState.dy);
+      }
+    },
+    onPanResponderRelease: (evt, gestureState) => {
+      if (gestureState.dy < -50) { // If swiped up more than 50 pixels
+        setShowViewers(true);
+        setIsPaused(true);
+        Animated.timing(translateY, {
+          toValue: -200, // Or whatever height your modal is
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      } else {
+        Animated.timing(translateY, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }).start();
+      }
+    },
+  }), [translateY]);
+
 
   if (!stories) return null;
   if (stories.length === 0) return (
@@ -65,20 +118,25 @@ export default function StoryViewer() {
   );
 
   const current = stories[index];
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
       {current.mediaType === 'video' && Video ? (
         <Video
+          ref={videoRef}
           source={{ uri: current.imageUrl }}
           style={styles.media}
           resizeMode="contain"
           shouldPlay={!isPaused}
           isLooping={false}
           onPlaybackStatusUpdate={(status: any) => {
-            if (status?.isLoaded && status?.didJustFinish) {
-              if (index < stories.length - 1) setIndex((i) => i + 1);
-              else router.back();
+            if (status.isLoaded && status.didJustFinish) {
+              if (index < stories.length - 1) {
+                setIndex((i) => i + 1);
+              } else {
+                router.back();
+              }
             }
           }}
         />
@@ -102,7 +160,7 @@ export default function StoryViewer() {
           style={styles.navZone}
           onPress={() => {
             setIndex((i) => Math.max(0, i - 1));
-            if (resolvedConvexUserId) recordTap({ authorId: resolvedConvexUserId as any, direction: 'back' }).catch(() => {});
+            if (resolvedConvexUserId) recordTap({ authorId: resolvedConvexUserId as any, direction: 'back' }).catch((err) => console.error("Failed to record tap (back):", err));
           }}
           onLongPress={() => {
             setIsPaused(true);
@@ -124,7 +182,7 @@ export default function StoryViewer() {
           style={styles.navZone}
           onPress={() => {
             setIndex((i) => Math.min(stories.length - 1, i + 1));
-            if (resolvedConvexUserId) recordTap({ authorId: resolvedConvexUserId as any, direction: 'forward' }).catch(() => {});
+            if (resolvedConvexUserId) recordTap({ authorId: resolvedConvexUserId as any, direction: 'forward' }).catch((err) => console.error("Failed to record tap (forward):", err));
           }}
           onLongPress={() => {
             setIsPaused(true);
@@ -146,16 +204,26 @@ export default function StoryViewer() {
 
       {me && resolvedConvexUserId && String(me._id) === String(resolvedConvexUserId) && (
         <View style={styles.viewerHandleArea}>
-          <TouchableOpacity style={styles.viewerHandle} onPress={() => setShowViewers(true)}>
+          <TouchableOpacity style={styles.viewerHandle} onPress={() => { setShowViewers(true); setIsPaused(true); }}>
             <View style={styles.viewerPill} />
             <Text style={styles.viewerHint}>Swipe up to see viewers</Text>
           </TouchableOpacity>
         </View>
       )}
 
+      {me && resolvedConvexUserId && String(me._id) === String(resolvedConvexUserId) && (
+        <Animated.View
+          style={[
+            styles.swipeUpArea,
+            { transform: [{ translateY: translateY }] } // Apply animation here if needed
+          ]}
+          {...panResponder.panHandlers}
+        />
+      )}
+
       {showViewers && (
         <View style={styles.viewersModalOverlay}>
-          <TouchableOpacity style={styles.modalBackdrop} onPress={() => setShowViewers(false)} />
+          <TouchableOpacity style={styles.modalBackdrop} onPress={() => { setShowViewers(false); setIsPaused(false); }} />
           <View style={styles.viewersSheet}>
             <View style={styles.viewersHeader}>
               <Text style={styles.viewersTitle}>Viewers (24h)</Text>
@@ -167,7 +235,13 @@ export default function StoryViewer() {
             <View style={styles.viewersList}>
               {(viewersData?.viewers || []).map((v) => (
                 <View key={String(v.viewerId)} style={styles.viewerRow}>
-                  <View style={styles.viewerAvatar} />
+                  {v.avatar ? (
+                    <Image source={{ uri: v.avatar }} style={styles.viewerAvatar} contentFit="cover" />
+                  ) : (
+                    <View style={styles.viewerAvatarFallback}>
+                        <Ionicons name="person" size={24} color={COLORS.white} />
+                    </View>
+                  )}
                   <View style={styles.viewerInfo}>
                     <Text style={styles.viewerName}>{v.username || 'User'}</Text>
                     <Text style={styles.viewerTime}>{new Date(v.lastViewedAt).toLocaleTimeString()}</Text>
@@ -200,6 +274,8 @@ const styles = StyleSheet.create({
   },
   media: {
     flex: 1,
+    width: '100%',
+    height: '100%',
   },
   topBar: {
     position: 'absolute',
@@ -209,6 +285,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    zIndex: 100, // Ensure topBar is above other elements
   },
   progressContainer: {
     flex: 1,
@@ -230,18 +307,22 @@ const styles = StyleSheet.create({
   },
   navZones: {
     position: 'absolute',
-    bottom: 40,
+    top: 0,
+    bottom: 0,
     left: 0,
     right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    zIndex: 10,
   },
   navZone: {
     flex: 1,
-    height: 200,
+    height: '100%',
   },
   emptyText: {
     color: COLORS.white,
+    marginTop: 10,
+    fontSize: 16,
   },
   viewerHandleArea: {
     position: 'absolute',
@@ -249,6 +330,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: 'center',
+    zIndex: 30, // Ensure handle is above media
   },
   viewerHandle: {
     alignItems: 'center',
@@ -272,6 +354,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     justifyContent: 'flex-end',
+    zIndex: 50, // Ensure modal is on top
   },
   modalBackdrop: {
     ...StyleSheet.absoluteFillObject as any,
@@ -282,6 +365,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     paddingBottom: 24,
+    maxHeight: '70%', // Limit height to avoid overflowing content
   },
   viewersHeader: {
     flexDirection: 'row',
@@ -311,7 +395,6 @@ const styles = StyleSheet.create({
   viewersList: {
     paddingHorizontal: 8,
     paddingTop: 8,
-    maxHeight: 320,
   },
   viewerRow: {
     flexDirection: 'row',
@@ -325,6 +408,15 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     backgroundColor: 'rgba(255,255,255,0.15)',
     marginRight: 12,
+  },
+  viewerAvatarFallback: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: 'rgba(255,255,255,0.15)',
+      marginRight: 12,
+      justifyContent: 'center',
+      alignItems: 'center',
   },
   viewerInfo: {
     flex: 1,
@@ -350,6 +442,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+  swipeUpArea: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 160,
+    zIndex: 20,
+  },
 });
-
-

@@ -36,6 +36,7 @@ export const styles = StyleSheet.create({
   headerRight: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 10,
   },
   headerBadge: {
     backgroundColor: COLORS.primary,

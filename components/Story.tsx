@@ -23,7 +23,9 @@ export default function Story({ story }: { story: Story }) {
       return;
     }
     try {
-      await markAsViewed({ authorId: story.id as any });
+      if (story.id && !String(story.id).startsWith('user_')) {
+        await markAsViewed({ authorId: story.id as any });
+      }
     } catch (error) {
       console.error("Error marking story as viewed:", error);
     }
