@@ -1,5 +1,5 @@
 import { styles } from "@/styles/feed.styles";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, Image, TouchableOpacity, Animated, Easing } from "react-native";
 import { useRouter } from "expo-router";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -10,12 +10,27 @@ type Story = {
   avatar: string;
   hasStory: boolean;
   viewed?: boolean;
+  uploading?: boolean;
   onAdd?: () => Promise<void> | void;
 };
 
 export default function StoryItem({ story }: { story: Story }) {
   const router = useRouter();
   const markAsViewed = useMutation(api.stories.markStoryAsViewed);
+  const spinAnim = new Animated.Value(0);
+
+  if (story.uploading) {
+    Animated.loop(
+      Animated.timing(spinAnim, {
+        toValue: 1,
+        duration: 1000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    ).start();
+  } else {
+    spinAnim.stopAnimation();
+  }
   
   const handlePress = async () => {
     if (!story.hasStory) {
@@ -35,11 +50,27 @@ export default function StoryItem({ story }: { story: Story }) {
   return (
     <TouchableOpacity style={styles.storyWrapper} onPress={handlePress}>
       <View style={[
-        styles.storyRing, 
+        styles.storyRing,
         !story.hasStory && styles.noStory,
-        story.viewed && styles.viewedStory
+        story.viewed && styles.viewedStory,
       ]}>
         <Image source={{ uri: story.avatar }} style={styles.storyAvatar} />
+        {story.uploading && (
+          <Animated.View
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              right: 0,
+              bottom: 0,
+              borderRadius: 34,
+              borderWidth: 2,
+              borderColor: 'transparent',
+              borderTopColor: '#ffffff',
+              transform: [{ rotate: spinAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] }) }],
+            }}
+          />
+        )}
         {story.onAdd && (
           <View style={{ position: 'absolute', bottom: -2, right: -2, backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: 4, paddingVertical: 0 }}>
             <Text style={{ color: '#000', fontSize: 12 }}>+</Text>

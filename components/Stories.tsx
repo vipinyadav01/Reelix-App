@@ -9,7 +9,7 @@ import { api } from "@/convex/_generated/api";
 
 const StoriesSection = () => {
   const { user } = useUser();
-  const addStory = useAddStory();
+  const { addStory, isUploading } = useAddStory();
   const liveStories = useQuery(api.stories.getStoriesFeed);
   const meConvex = useQuery(api.user.getUserByClerkId, user?.id ? { clerkId: user.id } : 'skip');
   let data = liveStories && liveStories.length > 0 ? liveStories : STORIES;
@@ -21,6 +21,7 @@ const StoriesSection = () => {
       username: user.username || user.firstName || 'You',
       avatar: user.imageUrl || '',
       hasStory: existingMe ? existingMe.hasStory : false,
+      uploading: isUploading,
       onAdd: addStory,
     } as any;
     data = [
