@@ -455,9 +455,9 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: COLORS.white,
+    fontSize: 24,
+    fontFamily: 'JetBrainsMono-Medium',
+    color: COLORS.primary,
     letterSpacing: -0.5,
   },
   badge: {

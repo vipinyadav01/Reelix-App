@@ -43,9 +43,9 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: COLORS.white,
+    fontSize: 24,
+    fontFamily: "JetBrainsMono-Medium",
+    color: COLORS.primary,
   },
   contentDisabled: {
     opacity: 0.7,

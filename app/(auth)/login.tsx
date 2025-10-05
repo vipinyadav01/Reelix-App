@@ -13,8 +13,6 @@ export default function Login() {
     const router = useRouter()
     const segments = useSegments()
     const loginAttemptRef = useRef(false)
-
-    // Handle navigation when auth state changes
     useEffect(() => {
         if (isSignedIn) {
             console.log("Login component: User is signed in, navigating to tabs");
@@ -27,7 +25,6 @@ export default function Login() {
             return;
         }
 
-        // Check if user is already signed in
         if (isSignedIn) {
             console.log("User already signed in, redirecting to tabs");
             router.replace("/(tabs)");
@@ -46,14 +43,11 @@ export default function Login() {
 
             console.log("OAuth flow completed:", result);
 
-            // Handle different response formats
             const { createdSessionId, setActive, signUp, signIn: signInResult } = result || {};
 
-            // Check if we have a sign-up that needs completion
             if (signUp && signUp.status === "missing_requirements") {
                 console.log("Sign-up needs completion, missing fields:", signUp.missingFields);
                 
-                // Complete the sign-up with required fields
                 if (signUp.missingFields.includes("username")) {
                     const email = signUp.emailAddress;
                     const username = email ? email.split("@")[0] : "user" + Date.now();

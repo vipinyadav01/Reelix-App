@@ -78,9 +78,9 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    color: COLORS.white,
-    fontSize: 18,
-    fontWeight: '600',
+    color: COLORS.primary,
+    fontSize: 24,
+    fontFamily: 'JetBrainsMono-Medium',
   },
   scrollView: {
     flex: 1,
