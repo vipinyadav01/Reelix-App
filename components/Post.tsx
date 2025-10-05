@@ -135,7 +135,7 @@ export default function Post({ post }: PostProps) {
             <Ionicons
               name={isLiked ? "heart" : "heart-outline"}
               size={24}
-              color={isLiked ? COLORS.primary : COLORS.white}
+              color={isLiked ? '#ef4444' : COLORS.white}
             />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setShowComments(true)}>

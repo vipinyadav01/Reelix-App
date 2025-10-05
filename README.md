@@ -95,8 +95,9 @@ convex/
 
 - Stories bar: `app/(tabs)/index.tsx` via `components/Stories.tsx`
 - Story circle: `components/Story.tsx` (always shows + for your profile)
-- Add story flow: `hooks/useAddStory.ts` (camera or gallery upload)
+- Add story flow: `hooks/useAddStory.ts` (camera or gallery upload, routes to edit)
 - Story viewer: `app/story/[id].tsx` (tap/hold navigation, viewers sheet)
+- Story edit screen: `app/story/edit.tsx` (preview + Public / Close Friends)
 - Backend:
   - `convex/schema.ts` (tables: stories, storyViews, storyMetrics)
   - `convex/stories.ts` (queries/mutations: upload, metrics, viewers)
@@ -111,6 +112,11 @@ convex/
 - Viewer list (author-only): usernames, view count, and replays
 - Engagement metrics (impressions, reach, taps forward/back)
 - Smooth viewer: tap right/left to navigate, long-press to pause/seek
+- Accurate progress bar per story (pauses/resumes and advances automatically)
+- Video playback migrated to expo-video with async source replacement
+- Story deletion by author (trash icon in viewer)
+- Story ring states: new (primary), viewed (gray), uploading (spinning ring)
+- Edit screen with Share Public and Close Friends (coming soon)
 
 ### User Profiles
 - Dynamic profile pages for any user
@@ -127,6 +133,10 @@ convex/
 - Secure Clerk integration
 - User data synchronization with Convex
 - Protected routes and navigation
+
+### UI/UX
+- Glassmorphism tab bar using BlurView with gradient overlay
+- Dark/light adaptive tab icon colors
 
 ## 🚧 Future Implementation Plans
 
