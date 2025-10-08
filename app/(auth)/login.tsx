@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native'
+import { View, Text, Image, TouchableOpacity, Alert } from 'react-native'
 import React, { useState, useRef, useEffect } from 'react'
 import { styles } from '@/styles/auth.styles'
 import { Ionicons } from '@expo/vector-icons'
@@ -8,11 +8,12 @@ import { useRouter } from 'expo-router'
 
 export default function Login() {
     const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
     const { startSSOFlow } = useSSO()
     const { isLoaded, isSignedIn } = useAuth()
     const router = useRouter()
     
-    const loginAttemptRef = useRef(false)
+    // Redirect if already signed in
     useEffect(() => {
         if (!isLoaded) return
         if (isSignedIn) {
@@ -21,7 +22,7 @@ export default function Login() {
     }, [isLoaded, isSignedIn, router])
 
     const handleGoogleSignIn = async () => {
-        if (isLoading || loginAttemptRef.current) {
+        if (isLoading) {
             return;
         }
 
@@ -32,15 +33,21 @@ export default function Login() {
 
         try {
             setIsLoading(true);
-            loginAttemptRef.current = true;
+            setError(null);
             
             const result = await startSSOFlow({ 
                 strategy: 'oauth_google'
             });
 
-            const { createdSessionId, setActive, signUp } = result || {}
+            if (!result) {
+                throw new Error("Authentication was cancelled")
+            }
 
+            const { createdSessionId, setActive, signUp } = result
+
+            // Handle new user signup
             if (signUp && signUp.status === "missing_requirements") {
+                // Generate username from email if needed
                 if (signUp.missingFields.includes("username")) {
                     const email = signUp.emailAddress;
                     const username = email ? email.split("@")[0] : "user" + Date.now();
@@ -49,28 +56,41 @@ export default function Login() {
                     });
                 }
                 
+                // Complete the signup
                 const signUpResult = await signUp.create({})
                 if (signUpResult?.createdSessionId && setActive) {
                     await setActive({ session: signUpResult.createdSessionId })
+                } else {
+                    throw new Error("Failed to complete signup")
                 }
             }
-
-            if (createdSessionId && setActive && !signUp) {
+            // Handle existing user login
+            else if (createdSessionId && setActive) {
                 await setActive({ session: createdSessionId })
-            } else if (setActive && !signUp) {
+            } 
+            // Handle edge case
+            else if (setActive) {
                 await setActive({ session: null })
-            } else if (!signUp) {
-                throw new Error("OAuth authentication failed")
+            } else {
+                throw new Error("Authentication failed - no session created")
             }
 
-            await new Promise(resolve => setTimeout(resolve, 800))
-            router.replace("/(tabs)")
+            // Small delay to ensure state is updated
+            await new Promise(resolve => setTimeout(resolve, 500))
             
-        } catch {
+            // Navigation will be handled by the auth state change
+            // Don't force navigation here to avoid conflicts
             
+        } catch (error: any) {
+            console.error("Login error:", error)
+            setError(error.message || "Authentication failed. Please try again.")
+            Alert.alert(
+                "Login Failed", 
+                error.message || "Authentication failed. Please try again.",
+                [{ text: "OK" }]
+            )
         } finally {
             setIsLoading(false);
-            loginAttemptRef.current = false;
         }
     }
   return (
@@ -106,6 +126,11 @@ export default function Login() {
                         {isLoading ? "Signing in..." : "Continue with Google"}
                     </Text>
                 </TouchableOpacity>
+                {error && (
+                    <Text style={[styles.termsText, { color: COLORS.error, marginTop: 10 }]}>
+                        {error}
+                    </Text>
+                )}
                 <Text style={styles.termsText}>
                     By continuing, you agree to our Terms and Privacy Policy
                 </Text>

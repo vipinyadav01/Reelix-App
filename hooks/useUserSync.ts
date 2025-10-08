@@ -23,7 +23,7 @@ export function useUserSync() {
       console.log("User sync timeout reached - allowing navigation to proceed");
       setTimeoutReached(true);
       setSyncComplete(true);
-    }, 15000); // 15 second timeout to give webhooks time to process
+    }, 8000); // Reduced to 8 seconds for better UX
 
     return () => clearTimeout(timeout);
   }, [user, isLoaded]);

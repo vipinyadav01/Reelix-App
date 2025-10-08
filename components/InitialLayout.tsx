@@ -4,16 +4,16 @@ import { useEffect, useState } from "react"
 import { useUserSync } from "@/hooks/useUserSync"
 import { View, Text } from "react-native"
 import { COLORS } from "@/constants/theme"
+import { Loader } from "@/components/Loader"
 
 export default function InitialLayout() {
     const { isLoaded, isSignedIn } = useAuth()
-    const { isLoading: userSyncLoading, syncComplete, isSyncing, timeoutReached } = useUserSync()
+    const { isLoading: userSyncLoading, syncComplete, timeoutReached } = useUserSync()
     const [navigationReady, setNavigationReady] = useState(false)
 
     const segments = useSegments()
     const router = useRouter()
 
-    // Add a small delay to ensure navigation is ready
     useEffect(() => {
         const timer = setTimeout(() => {
             setNavigationReady(true)
@@ -33,34 +33,29 @@ export default function InitialLayout() {
         
         if (!isSignedIn && !isAuthScreen) {
             router.replace("/(auth)/login")
-        } else if (isSignedIn && (isIndexScreen || isAuthScreen)) {
-            if (!isTabsScreen) {
-                router.replace("/(tabs)")
-            }
+            return
+        }
+        
+        if (isSignedIn && (isAuthScreen || isIndexScreen)) {
+            router.replace("/(tabs)")
+            return
         }
 
-    }, [isLoaded, isSignedIn, segments, userSyncLoading, syncComplete, isSyncing, timeoutReached, navigationReady, router])
+    }, [isLoaded, isSignedIn, segments, navigationReady, router])
 
     if (!isLoaded || !navigationReady) {
-        return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
-                <Text style={{ color: COLORS.white }}>Loading...</Text>
-            </View>
-        )
+        return <Loader />
     }
 
-    // Only show user sync loading if we're not already on a valid screen
     const isOnValidScreen = segments[0] === "(tabs)" || segments[0] === "(auth)"
-    
-    // Show loading while syncing user data
-    if (isSignedIn && userSyncLoading && !isOnValidScreen) {
+    if (isSignedIn && userSyncLoading && !isOnValidScreen && !timeoutReached) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
-                <Text style={{ color: COLORS.white }}>Setting up your account...</Text>
+                <Text style={{ color: COLORS.white, marginBottom: 20 }}>Setting up your account...</Text>
+                <Loader />
             </View>
         )
     }
 
-    // Render the actual page content using Slot
     return <Slot />
 }
