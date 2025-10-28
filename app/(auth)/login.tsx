@@ -1,5 +1,5 @@
 import { View, Text, Image, TouchableOpacity, Alert } from 'react-native'
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { styles } from '@/styles/auth.styles'
 import { Ionicons } from '@expo/vector-icons'
 import { COLORS } from '@/constants/theme'

@@ -8,7 +8,7 @@ import { Loader } from "@/components/Loader"
 
 export default function InitialLayout() {
     const { isLoaded, isSignedIn } = useAuth()
-    const { isLoading: userSyncLoading, syncComplete, timeoutReached } = useUserSync()
+    const { isLoading: userSyncLoading, timeoutReached } = useUserSync()
     const [navigationReady, setNavigationReady] = useState(false)
 
     const segments = useSegments()
@@ -29,7 +29,6 @@ export default function InitialLayout() {
         const currentPath = segments.join("/")
         const isAuthScreen = segments[0] === "(auth)"
         const isIndexScreen = currentPath === "" || segments[0] === undefined
-        const isTabsScreen = segments[0] === "(tabs)"
         
         if (!isSignedIn && !isAuthScreen) {
             router.replace("/(auth)/login")
