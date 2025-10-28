@@ -13,12 +13,11 @@ import {
   Platform,
   DynamicColorIOS,
   useColorScheme,
-  StyleSheet,
+  View,
 } from "react-native";
 import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { useNotificationsSimple as useNotifications } from "@/hooks/useNotificationsSimple";
 import { theme } from "@/constants/theme";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 type VectorIconFamily = {
   getImageSource: (
@@ -39,7 +38,7 @@ export default function TabLayout() {
   const labelSelectedStyle = Platform.OS === "ios" ? { color: tintColor } : undefined;
 
   return (
-    <SafeAreaView edges={["bottom"]} style={styles.containerDark}>
+    <View style={{ flex: 1, backgroundColor: theme.background }} >
       <NativeTabs
         badgeBackgroundColor={tintColor}
         labelStyle={{
@@ -68,7 +67,7 @@ export default function TabLayout() {
         indicatorColor={tintColor + "25"}
         disableTransparentOnScrollEdge={true}
       >
-        {/* Home */}
+        {/* Home - Feed */}
         <NativeTabs.Trigger name="index">
           {Platform.select({
             ios: (
@@ -97,7 +96,7 @@ export default function TabLayout() {
           <Label selectedStyle={labelSelectedStyle}>Home</Label>
         </NativeTabs.Trigger>
 
-        {/* Bookmarks */}
+        {/* Explore */}
         <NativeTabs.Trigger name="bookmarks">
           {Platform.select({
             ios: (
@@ -105,7 +104,7 @@ export default function TabLayout() {
                 src={
                   <VectorIcon
                     family={MaterialCommunityIcons as VectorIconFamily}
-                    name="bookmark-outline"
+                    name="compass-outline"
                   />
                 }
                 selectedColor={tintColor}
@@ -116,17 +115,14 @@ export default function TabLayout() {
                 src={
                   <VectorIcon
                     family={MaterialCommunityIcons as VectorIconFamily}
-                    name="bookmark-outline"
+                    name="compass-outline"
                   />
                 }
                 selectedColor={tintColor}
               />
             ),
           })}
-          <Label selectedStyle={labelSelectedStyle}>Bookmarks</Label>
-          {unreadCount > 0 && (
-            <Badge>{unreadCount > 99 ? "99+" : String(unreadCount)}</Badge>
-          )}
+          <Label selectedStyle={labelSelectedStyle}>Explore</Label>
         </NativeTabs.Trigger>
 
         {/* Create */}
@@ -137,7 +133,7 @@ export default function TabLayout() {
                 src={
                   <VectorIcon
                     family={MaterialCommunityIcons as VectorIconFamily}
-                    name="plus-circle-outline"
+                    name="plus-circle"
                   />
                 }
                 selectedColor={tintColor}
@@ -148,7 +144,7 @@ export default function TabLayout() {
                 src={
                   <VectorIcon
                     family={MaterialCommunityIcons as VectorIconFamily}
-                    name="plus-circle-outline"
+                    name="plus-circle"
                   />
                 }
                 selectedColor={tintColor}
@@ -158,7 +154,7 @@ export default function TabLayout() {
           <Label selectedStyle={labelSelectedStyle}>Create</Label>
         </NativeTabs.Trigger>
 
-        {/* Activity */}
+        {/* Notifications */}
         <NativeTabs.Trigger name="notification" role={isLiquidGlassAvailable() ? "search" : undefined}>
           {Platform.select({
             ios: (
@@ -198,7 +194,7 @@ export default function TabLayout() {
                 src={
                   <VectorIcon
                     family={MaterialCommunityIcons as VectorIconFamily}
-                    name="account-outline"
+                    name="account-circle-outline"
                   />
                 }
                 selectedColor={tintColor}
@@ -209,7 +205,7 @@ export default function TabLayout() {
                 src={
                   <VectorIcon
                     family={MaterialCommunityIcons as VectorIconFamily}
-                    name="account-outline"
+                    name="account-circle-outline"
                   />
                 }
                 selectedColor={tintColor}
@@ -219,10 +215,6 @@ export default function TabLayout() {
           <Label selectedStyle={labelSelectedStyle}>Profile</Label>
         </NativeTabs.Trigger>
       </NativeTabs>
-    </SafeAreaView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  containerDark: { flex: 1, backgroundColor: theme.color.background.dark },
-});

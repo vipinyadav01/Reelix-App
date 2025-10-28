@@ -53,18 +53,12 @@ export default function RootLayout() {
             <GestureHandlerRootView style={{ flex: 1 }}>
               <SafeAreaProvider>
                 <SafeAreaView
-                  edges={["top"]}
+                  edges={["top", "left", "right"]}
                   style={{ flex: 1, backgroundColor: theme.color.background.dark }}
                   onLayout={onLayoutRootView}
                 >
                   <InitialLayout />
                 </SafeAreaView>
-                {/* Paint bottom safe area dark globally on iOS */}
-                <SafeAreaView
-                  edges={["bottom"]}
-                  pointerEvents="none"
-                  style={{ backgroundColor: theme.color.background.dark }}
-                />
               </SafeAreaProvider>
               <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
             </GestureHandlerRootView>
