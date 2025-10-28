@@ -6,10 +6,14 @@ import { SplashScreen } from "expo-router";
 import { useFonts } from "expo-font";
 import { useCallback, useEffect } from "react";
 import * as NavigationBar from "expo-navigation-bar";
-import { Platform } from "react-native";
+import { Platform, useColorScheme } from "react-native";
 
 import { StatusBar } from "expo-status-bar";
 import { SystemProvider } from "@/hooks/SystemProvider";
+import { setBackgroundColorAsync } from "expo-system-ui";
+import { theme } from "@/constants/theme";
+import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -17,6 +21,7 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     "JetBrainsMono-Medium": require("../assets/fonts/JetBrainsMono-Medium.ttf"),
   });
+  const colorScheme = useColorScheme() || "light";
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
@@ -26,9 +31,15 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (Platform.OS === "android") {
-      NavigationBar.setButtonStyleAsync("light");
+      NavigationBar.setButtonStyleAsync(colorScheme === "light" ? "dark" : "light");
     }
-  }, []);
+  }, [colorScheme]);
+
+  useEffect(() => {
+    setBackgroundColorAsync(
+      colorScheme === "dark" ? theme.color.background.dark : theme.color.background.light
+    );
+  }, [colorScheme]);
 
   useEffect(() => {
     if (fontsLoaded) {
@@ -44,12 +55,16 @@ export default function RootLayout() {
     <ClerkAndConvexProvider>
       <SystemProvider>
         <NotificationProvider>
-          <SafeAreaProvider>
-            <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
-              <InitialLayout />
-            </SafeAreaView>
-          </SafeAreaProvider>
-          <StatusBar style="light" />
+          <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <SafeAreaProvider>
+                <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: theme.color.background.dark }}>
+                  <InitialLayout />
+                </SafeAreaView>
+              </SafeAreaProvider>
+              <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+            </GestureHandlerRootView>
+          </ThemeProvider>
         </NotificationProvider>
       </SystemProvider>
     </ClerkAndConvexProvider>
