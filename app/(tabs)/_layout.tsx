@@ -1,191 +1,163 @@
-import { Tabs } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { COLORS } from '@/constants/theme';
-import { StyleSheet, View, Text, useColorScheme } from 'react-native';
-import { useNotificationsSimple as useNotifications } from '@/hooks/useNotificationsSimple';
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import {
+  Badge,
+  Icon,
+  Label,
+  NativeTabs,
+  VectorIcon,
+} from "expo-router/unstable-native-tabs";
+import React from "react";
+import {
+  ColorValue,
+  ImageSourcePropType,
+  Platform,
+  DynamicColorIOS,
+  useColorScheme,
+} from "react-native";
+import { COLORS } from "@/constants/theme";
+import { isLiquidGlassAvailable } from "expo-glass-effect";
+import { useNotificationsSimple as useNotifications } from "@/hooks/useNotificationsSimple";
 
-const TabBarIcon = ({ 
-  iconName, 
-  focused, 
-  color, 
-  size, 
-  badgeCount 
-}: {
-  iconName: string;
-  focused: boolean;
-  color: string;
-  size: number;
-  badgeCount?: number;
-}) => {
-  const scheme = useColorScheme();
-  const isDark = scheme === 'dark';
-  return (
-    <View style={styles.tabIconContainer}>
-        <MaterialCommunityIcons
-        name={iconName as any}
-        size={size}
-        color={color}
-        style={focused ? styles.iconActive : styles.iconInactive}
-      />
-      {badgeCount !== undefined && badgeCount > 0 && (
-        <View style={[
-          styles.badge,
-          { borderColor: isDark ? 'rgba(20, 20, 20, 0.92)' : 'rgba(255, 255, 255, 0.85)' }
-        ]}>
-          <Text style={[
-            styles.badgeText,
-            { color: isDark ? COLORS.white : COLORS.black }
-          ]}>
-            {badgeCount > 99 ? '99+' : badgeCount}
-          </Text>
-        </View>
-      )}
-    </View>
-  );
+// Minimal type to satisfy VectorIcon family typing
+type VectorIconFamily = {
+  getImageSource: (
+    name: string,
+    size: number,
+    color: ColorValue,
+  ) => Promise<ImageSourcePropType>;
 };
 
 export default function TabLayout() {
   const scheme = useColorScheme();
-  const isDark = scheme === 'dark';
+  const isDark = scheme === "dark";
   const { unreadCount } = useNotifications();
-  
+
+  const tintColor = isDark ? COLORS.white : COLORS.black;
+  const inactiveTintColor = isDark ? "#FFFFFF90" : "#00000090";
+
+  const labelSelectedStyle = Platform.OS === "ios" ? { color: tintColor } : undefined;
+
   return (
-    <Tabs
-      screenOptions={{
-        tabBarShowLabel: false,
-        headerShown: false,
-        tabBarActiveTintColor: isDark ? COLORS.white : COLORS.black,
-        tabBarInactiveTintColor: isDark ? 'rgba(255, 255, 255, 0.55)' : 'rgba(0, 0, 0, 0.55)',
-        tabBarStyle: [
-          styles.tabBar,
-          {
-            backgroundColor: isDark ? 'rgba(20, 20, 20, 0.92)' : 'rgba(255, 255, 255, 0.9)',
-            borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'
-          }
-        ],
+    <NativeTabs
+      badgeBackgroundColor={tintColor}
+      labelStyle={{
+        color:
+          Platform.OS === "ios" && isLiquidGlassAvailable()
+            ? DynamicColorIOS({
+                light: COLORS.black,
+                dark: COLORS.white,
+              })
+            : inactiveTintColor,
       }}
+      iconColor={
+        Platform.OS === "ios" && isLiquidGlassAvailable()
+          ? DynamicColorIOS({
+              light: COLORS.black,
+              dark: COLORS.white,
+            })
+          : inactiveTintColor
+      }
+      tintColor={
+        Platform.OS === "ios"
+          ? DynamicColorIOS({ light: COLORS.primary, dark: COLORS.white })
+          : inactiveTintColor
+      }
+      labelVisibilityMode="labeled"
+      indicatorColor={tintColor + "25"}
+      disableTransparentOnScrollEdge={true}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          tabBarIcon: ({ size, color, focused }) => (
-            <TabBarIcon
-              iconName={focused ? 'home' : 'home-outline'}
-              focused={focused}
-              color={color}
-              size={focused ? size + 4 : size}
+      <NativeTabs.Trigger name="index">
+        {Platform.select({
+          ios: <Icon sf="house" />,
+          android: (
+            <Icon
+              src={
+                <VectorIcon
+                  family={MaterialCommunityIcons as VectorIconFamily}
+                  name="home-outline"
+                />
+              }
+              selectedColor={tintColor}
             />
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="bookmarks"
-        options={{
-          tabBarIcon: ({ size, color, focused }) => (
-            <TabBarIcon
-              iconName={focused ? 'bookmark' : 'bookmark-outline'}
-              focused={focused}
-              color={color}
-              size={focused ? size + 4 : size}
+        })}
+        <Label selectedStyle={labelSelectedStyle}>Home</Label>
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="bookmarks">
+        {Platform.select({
+          ios: <Icon sf="bookmark" selectedColor={tintColor} />,
+          android: (
+            <Icon
+              src={
+                <VectorIcon
+                  family={MaterialCommunityIcons as VectorIconFamily}
+                  name="bookmark-outline"
+                />
+              }
+              selectedColor={tintColor}
             />
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="create"
-        options={{
-          tabBarIcon: ({ size, color, focused }) => (
-            <TabBarIcon
-              iconName={focused ? 'plus-circle' : 'plus-circle-outline'}
-              focused={focused}
-              color={color}
-              size={focused ? size + 8 : size + 4}
+        })}
+        <Label selectedStyle={labelSelectedStyle}>Bookmarks</Label>
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="create">
+        {Platform.select({
+          ios: <Icon sf="plus.circle" />,
+          android: (
+            <Icon
+              src={
+                <VectorIcon
+                  family={MaterialCommunityIcons as VectorIconFamily}
+                  name="plus-circle-outline"
+                />
+              }
+              selectedColor={tintColor}
             />
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="notification"
-        options={{
-          tabBarIcon: ({ size, color, focused }) => (
-            <TabBarIcon
-              iconName={focused ? 'heart' : 'heart-outline'}
-              focused={focused}
-              color={color}
-              size={focused ? size + 4 : size}
-              badgeCount={unreadCount}
+        })}
+        <Label selectedStyle={labelSelectedStyle}>Create</Label>
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="notification" role={isLiquidGlassAvailable() ? "search" : undefined}>
+        {Platform.select({
+          ios: <Icon sf="heart" />,
+          android: (
+            <Icon
+              src={
+                <VectorIcon
+                  family={MaterialCommunityIcons as VectorIconFamily}
+                  name="heart-outline"
+                />
+              }
+              selectedColor={tintColor}
             />
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          tabBarIcon: ({ size, color, focused }) => (
-            <TabBarIcon
-              iconName={focused ? 'account' : 'account-outline'}
-              focused={focused}
-              color={color}
-              size={focused ? size + 4 : size}
+        })}
+        <Label selectedStyle={labelSelectedStyle}>Activity</Label>
+        {unreadCount > 0 && !isLiquidGlassAvailable() && (
+          <Badge>{unreadCount > 99 ? "99+" : String(unreadCount)}</Badge>
+        )}
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="profile">
+        {Platform.select({
+          ios: <Icon sf="person" />,
+          android: (
+            <Icon
+              src={
+                <VectorIcon
+                  family={MaterialCommunityIcons as VectorIconFamily}
+                  name="account-outline"
+                />
+              }
+              selectedColor={tintColor}
             />
           ),
-        }}
-      />
-    </Tabs>
+        })}
+        <Label selectedStyle={labelSelectedStyle}>Profile</Label>
+      </NativeTabs.Trigger>
+    </NativeTabs>
   );
 }
-
-const styles = StyleSheet.create({
-  tabBar: {
-    position: 'absolute',
-    elevation: 8,
-    shadowOpacity: 0.2,
-    shadowRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    borderTopWidth: 0,
-    height: 60,
-    backgroundColor: 'rgba(20, 20, 20, 0.92)',
-    borderRadius: 20, 
-    marginHorizontal: 15,
-    marginBottom: 2,
-    paddingBottom: 1,
-    paddingTop: 8,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    borderWidth: 0.5,
-    backdropFilter: 'blur(30px)', 
-  },
-  tabIconContainer: {
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconActive: {
-    transform: [{ scale: 1.1 }],
-    opacity: 1,
-  },
-  iconInactive: {
-    transform: [{ scale: 0.9 }],
-    opacity: 0.7,
-  },
-  badge: {
-    position: 'absolute',
-    top: -8,
-    right: -12,
-    backgroundColor: '#FF3B30', 
-    borderRadius: 10,
-    minWidth: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 5,
-    borderWidth: 2,
-    borderColor: 'rgba(20, 20, 20, 0.92)',
-  },
-  badgeText: {
-    color: 'white',
-    fontSize: 11,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-});
