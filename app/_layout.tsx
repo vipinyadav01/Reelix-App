@@ -12,7 +12,11 @@ import { StatusBar } from "expo-status-bar";
 import { SystemProvider } from "@/hooks/SystemProvider";
 import { setBackgroundColorAsync } from "expo-system-ui";
 import { theme } from "@/constants/theme";
-import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 SplashScreen.preventAutoHideAsync();
@@ -31,13 +35,17 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (Platform.OS === "android") {
-      NavigationBar.setButtonStyleAsync(colorScheme === "light" ? "dark" : "light");
+      NavigationBar.setButtonStyleAsync(
+        colorScheme === "light" ? "dark" : "light",
+      );
     }
   }, [colorScheme]);
 
   useEffect(() => {
     setBackgroundColorAsync(
-      colorScheme === "dark" ? theme.color.background.dark : theme.color.background.light
+      colorScheme === "dark"
+        ? theme.color.background.dark
+        : theme.color.background.light,
     );
   }, [colorScheme]);
 
@@ -49,12 +57,17 @@ export default function RootLayout() {
     <ClerkAndConvexProvider>
       <SystemProvider>
         <NotificationProvider>
-          <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+          <ThemeProvider
+            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+          >
             <GestureHandlerRootView style={{ flex: 1 }}>
               <SafeAreaProvider>
                 <SafeAreaView
                   edges={["top", "left", "right"]}
-                  style={{ flex: 1, backgroundColor: theme.color.background.dark }}
+                  style={{
+                    flex: 1,
+                    backgroundColor: theme.color.background.dark,
+                  }}
                   onLayout={onLayoutRootView}
                 >
                   <InitialLayout />

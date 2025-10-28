@@ -11,34 +11,34 @@ const fontScale = (size: number) =>
   isIpad ? Math.round(size * FONT_SCALE) : size;
 
 export const theme = {
-  primary: "#009544",       
-  secondary: "#833AB4",     
-  accent: "#FD1D1D",         
-    background: "#000000",     
-  surface: "#121212",        
-  surfaceLight: "#1E1E1E",   
-  surfaceHover: "#2A2A2A",  
-  text: "#FFFFFF",           
-  textSecondary: "#B0B0B0", 
-  textTertiary: "#666666",   
-  textInverse: "#000000",    
+  primary: "#009544",
+  secondary: "#833AB4",
+  accent: "#FD1D1D",
+  background: "#000000",
+  surface: "#121212",
+  surfaceLight: "#1E1E1E",
+  surfaceHover: "#2A2A2A",
+  text: "#FFFFFF",
+  textSecondary: "#B0B0B0",
+  textTertiary: "#666666",
+  textInverse: "#000000",
   white: "#FFFFFF",
   black: "#000000",
   gray: "#8E8E93",
   grayLight: "#C7C7CC",
   grayDark: "#3A3A3C",
-    success: "#31A24C",        
-  warning: "#FF9500",       
-  error: "#FF3B30",        
-  info: "#00D4FF",        
-  
+  success: "#31A24C",
+  warning: "#FF9500",
+  error: "#FF3B30",
+  info: "#00D4FF",
+
   colorRed: "#FF3B30",
   colorWhite: "#FFFFFF",
   colorBlack: "#000000",
   colorLightGreen: "#34C759",
   colorDarkGreen: "#30D158",
   colorGrey: "#8E8E93",
-  
+
   color: {
     reactBlue: {
       light: "#009544",
@@ -77,7 +77,7 @@ export const theme = {
       dark: "#262626",
     },
   },
-    darkActiveContent: "rgba(255,255,255,0.15)",
+  darkActiveContent: "rgba(255,255,255,0.15)",
   lightActiveContent: "rgba(0,0,0,0.08)",
   space2: spaceScale(2),
   space4: spaceScale(4),
@@ -87,7 +87,7 @@ export const theme = {
   space24: spaceScale(24),
   space32: spaceScale(32),
   space40: spaceScale(40),
-    fontSize10: fontScale(10),
+  fontSize10: fontScale(10),
   fontSize12: fontScale(12),
   fontSize14: fontScale(14),
   fontSize16: fontScale(16),
@@ -98,7 +98,7 @@ export const theme = {
   fontSize32: fontScale(32),
   fontSize34: fontScale(34),
   fontSize42: fontScale(42),
-    fontFamilyLight: "Montserrat-Light",
+  fontFamilyLight: "Montserrat-Light",
   fontFamilyLightItalic: "Montserrat-LightItalic",
   fontFamily: "Montserrat-Medium",
   fontFamilyItalic: "Montserrat-MediumItalic",
@@ -116,7 +116,7 @@ export const theme = {
   borderRadius40: 40,
   borderRadius45: 45,
   borderRadius80: 80,
-  
+
   dropShadow: {
     boxShadow: "0 2px 4px 0 rgba(0, 0, 0, 0.1)",
   },

@@ -2,7 +2,7 @@ import { useAuth } from "@clerk/clerk-expo";
 import { useRouter, useSegments, Slot } from "expo-router";
 import { useEffect, useState } from "react";
 import { useUserSync } from "@/hooks/useUserSync";
-import { View, Text, useColorScheme } from "react-native"; // Import useColorScheme
+import { View, Text, useColorScheme } from "react-native";
 import { theme } from "@/constants/theme";
 import { Loader } from "@/components/Loader";
 
@@ -13,10 +13,12 @@ export default function InitialLayout() {
 
   const segments = useSegments();
   const router = useRouter();
-  const colorScheme = useColorScheme(); 
+  const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
-  const dynamicBackgroundColor = isDark ? theme.color.background.dark : theme.color.background.light;
-  const dynamicTextColor = isDark ? theme.colorWhite : theme.colorBlack; // For text
+  const dynamicBackgroundColor = isDark
+    ? theme.color.background.dark
+    : theme.color.background.light;
+  const dynamicTextColor = isDark ? theme.colorWhite : theme.colorBlack;
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -43,6 +45,7 @@ export default function InitialLayout() {
       return;
     }
   }, [isLoaded, isSignedIn, segments, navigationReady, router]);
+
   if (!isLoaded || !navigationReady) {
     return <Loader />;
   }
@@ -64,6 +67,7 @@ export default function InitialLayout() {
       </View>
     );
   }
+
   return (
     <View style={{ flex: 1, backgroundColor: dynamicBackgroundColor }}>
       <Slot />
