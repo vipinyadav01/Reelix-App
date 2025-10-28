@@ -41,12 +41,6 @@ export default function RootLayout() {
     );
   }, [colorScheme]);
 
-  useEffect(() => {
-    if (fontsLoaded) {
-      onLayoutRootView();
-    }
-  }, [fontsLoaded, onLayoutRootView]);
-
   if (!fontsLoaded) {
     return null;
   }
@@ -58,9 +52,19 @@ export default function RootLayout() {
           <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
             <GestureHandlerRootView style={{ flex: 1 }}>
               <SafeAreaProvider>
-                <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: theme.color.background.dark }}>
+                <SafeAreaView
+                  edges={["top"]}
+                  style={{ flex: 1, backgroundColor: theme.color.background.dark }}
+                  onLayout={onLayoutRootView}
+                >
                   <InitialLayout />
                 </SafeAreaView>
+                {/* Paint bottom safe area dark globally on iOS */}
+                <SafeAreaView
+                  edges={["bottom"]}
+                  pointerEvents="none"
+                  style={{ backgroundColor: theme.color.background.dark }}
+                />
               </SafeAreaProvider>
               <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
             </GestureHandlerRootView>

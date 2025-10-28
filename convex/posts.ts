@@ -65,21 +65,21 @@ export const getFeedPosts = query({
     const postsWithInfo = await Promise.all(
       posts.map(async (post) => {
         const postAuthor = await ctx.db.get(post.userId);
-        
+
         // Skip posts where author doesn't exist
         if (!postAuthor) return null;
 
         const like = await ctx.db
           .query("likes")
           .withIndex("by_user_and_post", (q) =>
-            q.eq("userId", currentUser._id).eq("postId", post._id)
+            q.eq("userId", currentUser._id).eq("postId", post._id),
           )
           .first();
 
         const bookmark = await ctx.db
           .query("bookmarks")
           .withIndex("by_user_and_post", (q) =>
-            q.eq("userId", currentUser._id).eq("postId", post._id)
+            q.eq("userId", currentUser._id).eq("postId", post._id),
           )
           .first();
 
@@ -94,14 +94,13 @@ export const getFeedPosts = query({
           isLiked: !!like,
           isBookmarked: !!bookmark,
         };
-      })
+      }),
     );
 
     // Filter out any null posts (where author didn't exist)
-    return postsWithInfo.filter(post => post !== null);
+    return postsWithInfo.filter((post) => post !== null);
   },
 });
-
 
 export const toggleLike = mutation({
   args: { postId: v.id("posts") },
@@ -111,7 +110,7 @@ export const toggleLike = mutation({
     const existing = await ctx.db
       .query("likes")
       .withIndex("by_user_and_post", (q) =>
-        q.eq("userId", currentUser._id).eq("postId", args.postId)
+        q.eq("userId", currentUser._id).eq("postId", args.postId),
       )
       .first();
 
@@ -154,7 +153,8 @@ export const deletePost = mutation({
     if (!post) throw new Error("Post not found");
 
     // verify ownership
-    if (post.userId !== currentUser._id) throw new Error("Not authorized to delete this post");
+    if (post.userId !== currentUser._id)
+      throw new Error("Not authorized to delete this post");
 
     // delete associated likes
     const likes = await ctx.db
@@ -215,7 +215,7 @@ export const getPostsByUser = query({
   },
   handler: async (ctx, args) => {
     let user;
-    
+
     if (args.userId) {
       // Get specific user by ID
       user = await ctx.db.get(args.userId);

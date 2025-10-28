@@ -11,14 +11,14 @@ export default function SSOCallback() {
 
   useEffect(() => {
     console.log("SSO callback params:", params);
-    
+
     const handleCallback = async () => {
       try {
         const sessionId = params.created_session_id || params.session_id;
-        
+
         if (sessionId) {
           console.log("Session created with ID:", sessionId);
-          await new Promise(resolve => setTimeout(resolve, 1500));
+          await new Promise((resolve) => setTimeout(resolve, 1500));
           router.replace("/(tabs)");
         } else {
           console.log("No session ID found, redirecting to login");
@@ -26,7 +26,6 @@ export default function SSOCallback() {
             router.replace("/(auth)/login");
           }, 1000);
         }
-        
       } catch (error: any) {
         console.error("OAuth callback error:", error);
         setError(error.message || "Authentication failed");
@@ -42,20 +41,26 @@ export default function SSOCallback() {
 
   if (error) {
     return (
-      <View style={{ 
-        flex: 1, 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        backgroundColor: '#000',
-        padding: 20 
-      }}>
-        <Text style={{ color: COLORS.error, textAlign: 'center', marginBottom: 20 }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#000",
+          padding: 20,
+        }}
+      >
+        <Text
+          style={{ color: COLORS.error, textAlign: "center", marginBottom: 20 }}
+        >
           Authentication Error
         </Text>
-        <Text style={{ color: COLORS.white, textAlign: 'center' }}>
+        <Text style={{ color: COLORS.white, textAlign: "center" }}>
           {error}
         </Text>
-        <Text style={{ color: COLORS.gray, textAlign: 'center', marginTop: 10 }}>
+        <Text
+          style={{ color: COLORS.gray, textAlign: "center", marginTop: 10 }}
+        >
           Redirecting to login...
         </Text>
       </View>
@@ -63,12 +68,14 @@ export default function SSOCallback() {
   }
 
   return (
-    <View style={{ 
-      flex: 1, 
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      backgroundColor: '#000' 
-    }}>
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#000",
+      }}
+    >
       <Text style={{ color: COLORS.white, marginBottom: 20 }}>
         Completing sign in...
       </Text>

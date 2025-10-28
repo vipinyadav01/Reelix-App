@@ -55,7 +55,7 @@ export const getComments = query({
             image: user!.image,
           },
         };
-      })
+      }),
     );
 
     return commentsWithInfo;

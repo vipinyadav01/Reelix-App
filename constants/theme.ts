@@ -94,7 +94,6 @@ export const theme = {
   },
 } as const;
 
-// Backwards-compatible color palette for existing imports
 export const COLORS = {
   primary: theme.colorDarkGreen,
   secondary: theme.colorLightGreen,

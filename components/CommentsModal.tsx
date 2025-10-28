@@ -24,7 +24,11 @@ type CommentsModal = {
   onClose: () => void;
 };
 
-export default function CommentsModal({ onClose, postId, visible }: CommentsModal) {
+export default function CommentsModal({
+  onClose,
+  postId,
+  visible,
+}: CommentsModal) {
   const [newComment, setNewComment] = useState("");
   const comments = useQuery(api.comments.getComments, { postId });
   const addComment = useMutation(api.comments.addComment);
@@ -45,7 +49,12 @@ export default function CommentsModal({ onClose, postId, visible }: CommentsModa
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={onClose}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.modalContainer}
@@ -79,8 +88,16 @@ export default function CommentsModal({ onClose, postId, visible }: CommentsModa
             multiline
           />
 
-          <TouchableOpacity onPress={handleAddComment} disabled={!newComment.trim()}>
-            <Text style={[styles.postButton, !newComment.trim() && styles.postButtonDisabled]}>
+          <TouchableOpacity
+            onPress={handleAddComment}
+            disabled={!newComment.trim()}
+          >
+            <Text
+              style={[
+                styles.postButton,
+                !newComment.trim() && styles.postButtonDisabled,
+              ]}
+            >
               Post
             </Text>
           </TouchableOpacity>

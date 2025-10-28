@@ -1,4 +1,4 @@
-import { COLORS } from "@/constants/theme";
+import { theme } from "@/constants/theme";
 import { StyleSheet, Dimensions } from "react-native";
 
 const { width, height } = Dimensions.get("window");
@@ -6,7 +6,7 @@ const { width, height } = Dimensions.get("window");
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: theme.color.background.dark,
   },
   brandSection: {
     alignItems: "center",
@@ -29,13 +29,13 @@ export const styles = StyleSheet.create({
     fontSize: 40,
     fontWeight: "700",
     fontFamily: "JetBrainsMono-Medium",
-    color: COLORS.primary,
+    color: theme.color.reactBlue.light,
     letterSpacing: 0.5,
     marginBottom: 6,
   },
   tagline: {
     fontSize: 16,
-    color: COLORS.gray,
+    color: theme.color.textSecondary.dark,
     letterSpacing: 0.5,
     textTransform: "lowercase",
   },
@@ -60,7 +60,7 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: COLORS.white,
+    backgroundColor: theme.colorWhite,
     paddingVertical: 16,
     paddingHorizontal: 24,
     borderRadius: 14,
@@ -72,9 +72,8 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 12,
     elevation: 5,
-    boxShadow: "0px 4px 12px rgba(0,0,0,0.15)",
     borderWidth: 1,
-    borderColor: COLORS.surfaceLight,
+    borderColor: theme.color.backgroundSecondary.dark,
   },
   googleIconContainer: {
     width: 24,
@@ -86,12 +85,12 @@ export const styles = StyleSheet.create({
   googleButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    color: COLORS.black,
+    color: theme.colorBlack,
   },
   termsText: {
     textAlign: "center",
     fontSize: 12,
-    color: COLORS.gray,
+    color: theme.color.textSecondary.dark,
     maxWidth: 280,
   },
 });

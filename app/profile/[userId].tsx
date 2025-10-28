@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,17 +10,17 @@ import {
   Alert,
   RefreshControl,
   Dimensions,
-} from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useUser } from '@clerk/clerk-expo';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '@/convex/_generated/api';
-import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '@/constants/theme';
-import { styles } from '@/styles/profile.styles';
-import { useProfileIntegration } from '@/hooks/useProfileIntegration';
+} from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { useUser } from "@clerk/clerk-expo";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Ionicons } from "@expo/vector-icons";
+import { COLORS } from "@/constants/theme";
+import { styles } from "@/styles/profile.styles";
+import { useProfileIntegration } from "@/hooks/useProfileIntegration";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -51,7 +51,10 @@ export default function ProfileScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <StatusBar barStyle="light-content" backgroundColor={COLORS.background} />
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor={COLORS.background}
+        />
         <ActivityIndicator size="large" color={COLORS.white} />
         <Text style={styles.loadingText}>Loading profile...</Text>
       </View>
@@ -61,11 +64,14 @@ export default function ProfileScreen() {
   if (error || !profileData) {
     return (
       <View style={styles.errorContainer}>
-        <StatusBar barStyle="light-content" backgroundColor={COLORS.background} />
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor={COLORS.background}
+        />
         <Ionicons name="alert-circle" size={64} color={COLORS.gray} />
         <Text style={styles.errorTitle}>Profile Not Found</Text>
         <Text style={styles.errorSubtitle}>
-          {error || 'This profile could not be loaded.'}
+          {error || "This profile could not be loaded."}
         </Text>
         <TouchableOpacity
           style={styles.retryButton}
@@ -77,12 +83,17 @@ export default function ProfileScreen() {
     );
   }
 
-  const { user, posts, stories, followStatus: relationshipStatus } = profileData;
+  const {
+    user,
+    posts,
+    stories,
+    followStatus: relationshipStatus,
+  } = profileData;
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.background} />
-      
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -91,11 +102,11 @@ export default function ProfileScreen() {
         >
           <Ionicons name="arrow-back" size={24} color={COLORS.white} />
         </TouchableOpacity>
-        
+
         <Text style={styles.headerTitle}>
-          {isOwnProfile ? 'Your Profile' : user?.username || 'Profile'}
+          {isOwnProfile ? "Your Profile" : user?.username || "Profile"}
         </Text>
-        
+
         {isOwnProfile ? (
           <TouchableOpacity
             style={styles.headerButton}
@@ -104,10 +115,7 @@ export default function ProfileScreen() {
             <Ionicons name="settings" size={24} color={COLORS.white} />
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity
-            style={styles.headerButton}
-            onPress={handleMessage}
-          >
+          <TouchableOpacity style={styles.headerButton} onPress={handleMessage}>
             <Ionicons name="chatbubble" size={24} color={COLORS.white} />
           </TouchableOpacity>
         )}
@@ -137,24 +145,28 @@ export default function ProfileScreen() {
               {isOwnProfile && (
                 <TouchableOpacity
                   style={styles.addStoryButton}
-                  onPress={() => router.push('/(tabs)/create')}
+                  onPress={() => router.push("/(tabs)/create")}
                 >
                   <Ionicons name="add" size={16} color={COLORS.white} />
                 </TouchableOpacity>
               )}
             </View>
-            
+
             <View style={styles.statsContainer}>
               <View style={styles.statItem}>
                 <Text style={styles.statNumber}>{posts?.length || 0}</Text>
                 <Text style={styles.statLabel}>Posts</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={styles.statNumber}>{user?.followersCount || 0}</Text>
+                <Text style={styles.statNumber}>
+                  {user?.followersCount || 0}
+                </Text>
                 <Text style={styles.statLabel}>Followers</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={styles.statNumber}>{user?.followingCount || 0}</Text>
+                <Text style={styles.statNumber}>
+                  {user?.followingCount || 0}
+                </Text>
                 <Text style={styles.statLabel}>Following</Text>
               </View>
             </View>
@@ -165,9 +177,7 @@ export default function ProfileScreen() {
               {user?.firstName} {user?.lastName}
             </Text>
             <Text style={styles.username}>@{user?.username}</Text>
-            {user?.bio && (
-              <Text style={styles.bio}>{user.bio}</Text>
-            )}
+            {user?.bio && <Text style={styles.bio}>{user.bio}</Text>}
           </View>
 
           {/* Action Buttons */}
@@ -176,19 +186,25 @@ export default function ProfileScreen() {
               <TouchableOpacity
                 style={[
                   styles.followButton,
-                  relationshipStatus?.followStatus === 'following' && styles.unfollowButton
+                  relationshipStatus?.followStatus === "following" &&
+                    styles.unfollowButton,
                 ]}
                 onPress={handleFollowToggle}
                 disabled={isLoading}
               >
-                <Text style={[
-                  styles.followButtonText,
-                  relationshipStatus?.followStatus === 'following' && styles.unfollowButtonText
-                ]}>
-                  {relationshipStatus?.followStatus === 'following' ? 'Unfollow' : 'Follow'}
+                <Text
+                  style={[
+                    styles.followButtonText,
+                    relationshipStatus?.followStatus === "following" &&
+                      styles.unfollowButtonText,
+                  ]}
+                >
+                  {relationshipStatus?.followStatus === "following"
+                    ? "Unfollow"
+                    : "Follow"}
                 </Text>
               </TouchableOpacity>
-              
+
               <TouchableOpacity
                 style={styles.messageButton}
                 onPress={handleMessage}
@@ -255,14 +271,16 @@ export default function ProfileScreen() {
             <View style={styles.emptyPostsContainer}>
               <Ionicons name="images-outline" size={48} color={COLORS.gray} />
               <Text style={styles.emptyPostsText}>
-                {isOwnProfile ? 'No posts yet' : 'No posts to show'}
+                {isOwnProfile ? "No posts yet" : "No posts to show"}
               </Text>
               {isOwnProfile && (
                 <TouchableOpacity
                   style={styles.createPostButton}
-                  onPress={() => router.push('/(tabs)/create')}
+                  onPress={() => router.push("/(tabs)/create")}
                 >
-                  <Text style={styles.createPostButtonText}>Create Your First Post</Text>
+                  <Text style={styles.createPostButtonText}>
+                    Create Your First Post
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>

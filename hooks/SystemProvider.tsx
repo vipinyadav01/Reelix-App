@@ -1,11 +1,11 @@
-import React from 'react';
-import { useSystemInitialization } from './useSystemInitialization';
+import React from "react";
+import { useSystemInitialization } from "./useSystemInitialization";
 
 export function SystemProvider({ children }: { children: React.ReactNode }) {
   const { error } = useSystemInitialization();
 
   if (error) {
-    console.warn('System initialization error:', error);
+    console.warn("System initialization error:", error);
     // Don't block the app for system errors, just log them
   }
 
@@ -13,5 +13,3 @@ export function SystemProvider({ children }: { children: React.ReactNode }) {
   // The system initialization happens in the background
   return <>{children}</>;
 }
-
-

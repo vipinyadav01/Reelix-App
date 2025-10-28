@@ -15,7 +15,7 @@ export const createUser = mutation({
   handler: async (ctx, args) => {
     console.log("=== Creating user in Convex ===");
     console.log("Args:", args);
-    
+
     try {
       const existingUser = await ctx.db
         .query("users")
@@ -41,11 +41,11 @@ export const createUser = mutation({
       });
 
       console.log("User created successfully with ID:", userId);
-      
+
       // Return the created user
       const createdUser = await ctx.db.get(userId);
       console.log("Created user data:", createdUser);
-      
+
       return createdUser;
     } catch (error) {
       console.error("Error in createUser mutation:", error);
@@ -113,7 +113,7 @@ export const isFollowing = query({
     const follow = await ctx.db
       .query("follows")
       .withIndex("by_follower_and_following", (q) =>
-        q.eq("followerId", currentUser._id).eq("followingId", args.followingId)
+        q.eq("followerId", currentUser._id).eq("followingId", args.followingId),
       )
       .first();
 
@@ -127,11 +127,16 @@ export const respondToFollowRequest = mutation({
     const currentUser = await getAuthenticatedUser(ctx);
     const request = await ctx.db
       .query("followRequests")
-      .withIndex("by_follower_and_following", (q) => q.eq("followerId", args.followerId).eq("followingId", currentUser._id))
+      .withIndex("by_follower_and_following", (q) =>
+        q.eq("followerId", args.followerId).eq("followingId", currentUser._id),
+      )
       .first();
     if (!request) return;
     if (args.approve) {
-      await ctx.db.insert("follows", { followerId: args.followerId, followingId: currentUser._id });
+      await ctx.db.insert("follows", {
+        followerId: args.followerId,
+        followingId: currentUser._id,
+      });
       await updateFollowCounts(ctx, args.followerId, currentUser._id, true);
       await ctx.db.delete(request._id);
     } else {
@@ -146,13 +151,17 @@ export const getRelationshipData = query({
     const me = await getAuthenticatedUser(ctx);
     const following = await ctx.db
       .query("follows")
-      .withIndex("by_follower_and_following", (q) => q.eq("followerId", me._id).eq("followingId", args.targetId))
+      .withIndex("by_follower_and_following", (q) =>
+        q.eq("followerId", me._id).eq("followingId", args.targetId),
+      )
       .first();
     const followedBy = await ctx.db
       .query("follows")
-      .withIndex("by_follower_and_following", (q) => q.eq("followerId", args.targetId).eq("followingId", me._id))
+      .withIndex("by_follower_and_following", (q) =>
+        q.eq("followerId", args.targetId).eq("followingId", me._id),
+      )
       .first();
-    const followStatus = following ? 'following' : 'not_following';
+    const followStatus = following ? "following" : "not_following";
     const mutualFollow = Boolean(following && followedBy);
     return { followStatus, mutualFollow } as const;
   },
@@ -166,7 +175,9 @@ export const toggleFollow = mutation({
     const existing = await ctx.db
       .query("follows")
       .withIndex("by_follower_and_following", (q) =>
-        q.eq("followerId", currentUser._id).eq("followingId", args.targetUserId)
+        q
+          .eq("followerId", currentUser._id)
+          .eq("followingId", args.targetUserId),
       )
       .first();
 
@@ -183,7 +194,11 @@ export const toggleFollow = mutation({
         // if already requested, short-circuit
         const existingReq = await ctx.db
           .query("followRequests")
-          .withIndex("by_follower_and_following", (q) => q.eq("followerId", currentUser._id).eq("followingId", args.targetUserId))
+          .withIndex("by_follower_and_following", (q) =>
+            q
+              .eq("followerId", currentUser._id)
+              .eq("followingId", args.targetUserId),
+          )
           .first();
         if (!existingReq) {
           await ctx.db.insert("followRequests", {
@@ -193,7 +208,11 @@ export const toggleFollow = mutation({
             createdAt: Date.now(),
           });
         }
-        return { success: true, newStatus: false, requiresApproval: true } as const;
+        return {
+          success: true,
+          newStatus: false,
+          requiresApproval: true,
+        } as const;
       }
 
       // follow immediately
@@ -218,7 +237,7 @@ async function updateFollowCounts(
   ctx: MutationCtx,
   followerId: Id<"users">,
   followingId: Id<"users">,
-  isFollow: boolean
+  isFollow: boolean,
 ) {
   const follower = await ctx.db.get(followerId);
   const following = await ctx.db.get(followingId);

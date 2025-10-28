@@ -1,6 +1,6 @@
-import { useCallback } from 'react';
-import { Alert } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useCallback } from "react";
+import { Alert } from "react-native";
+import { useRouter } from "expo-router";
 
 interface ProfileEventHandlers {
   handleFeedUserImageClick: (userId: string) => void;
@@ -18,80 +18,89 @@ interface ProfileEventHandlers {
 export function useProfileEvents(): ProfileEventHandlers {
   const router = useRouter();
 
-  const handleFeedUserImageClick = useCallback((userId: string) => {
-    try {
-      router.push(`/profile/${userId}` as any);
-    } catch (error) {
-      console.error('Navigation error:', error);
-      Alert.alert('Error', 'Failed to navigate to profile');
-    }
-  }, [router]);
+  const handleFeedUserImageClick = useCallback(
+    (userId: string) => {
+      try {
+        router.push(`/profile/${userId}` as any);
+      } catch (error) {
+        console.error("Navigation error:", error);
+        Alert.alert("Error", "Failed to navigate to profile");
+      }
+    },
+    [router],
+  );
 
   const handleFollowAction = useCallback(async (targetUserId: string) => {
     try {
       // This will be handled by the useProfileScreen hook
-      console.log('Follow action triggered for user:', targetUserId);
+      console.log("Follow action triggered for user:", targetUserId);
     } catch (error) {
-      console.error('Follow action error:', error);
-      Alert.alert('Error', 'Failed to follow user');
+      console.error("Follow action error:", error);
+      Alert.alert("Error", "Failed to follow user");
     }
   }, []);
 
   const handleUnfollowAction = useCallback(async (targetUserId: string) => {
     try {
       // This will be handled by the useProfileScreen hook
-      console.log('Unfollow action triggered for user:', targetUserId);
+      console.log("Unfollow action triggered for user:", targetUserId);
     } catch (error) {
-      console.error('Unfollow action error:', error);
-      Alert.alert('Error', 'Failed to unfollow user');
+      console.error("Unfollow action error:", error);
+      Alert.alert("Error", "Failed to unfollow user");
     }
   }, []);
 
-  const handleMessageAction = useCallback((targetUserId: string) => {
-    try {
-      router.push(`/chat/${targetUserId}` as any);
-    } catch (error) {
-      console.error('Message navigation error:', error);
-      Alert.alert('Error', 'Failed to open chat');
-    }
-  }, [router]);
+  const handleMessageAction = useCallback(
+    (targetUserId: string) => {
+      try {
+        router.push(`/chat/${targetUserId}` as any);
+      } catch (error) {
+        console.error("Message navigation error:", error);
+        Alert.alert("Error", "Failed to open chat");
+      }
+    },
+    [router],
+  );
 
   const handleBackNavigation = useCallback(() => {
     try {
       router.back();
     } catch (error) {
-      console.error('Back navigation error:', error);
-      router.push('/(tabs)');
+      console.error("Back navigation error:", error);
+      router.push("/(tabs)");
     }
   }, [router]);
 
   const handleEditProfileNavigation = useCallback(() => {
     try {
-      router.push('/profile/edit');
+      router.push("/profile/edit");
     } catch (error) {
-      console.error('Edit profile navigation error:', error);
-      Alert.alert('Error', 'Failed to open edit profile');
+      console.error("Edit profile navigation error:", error);
+      Alert.alert("Error", "Failed to open edit profile");
     }
   }, [router]);
 
   const handleFollowStatusUpdate = useCallback((status: string) => {
-    console.log('Follow status updated:', status);
+    console.log("Follow status updated:", status);
     // Real-time updates will be handled by Convex subscriptions
   }, []);
 
-  const handleUserStatusUpdate = useCallback((userId: string, status: string) => {
-    console.log('User status updated:', userId, status);
-    // Real-time updates will be handled by Convex subscriptions
-  }, []);
+  const handleUserStatusUpdate = useCallback(
+    (userId: string, status: string) => {
+      console.log("User status updated:", userId, status);
+      // Real-time updates will be handled by Convex subscriptions
+    },
+    [],
+  );
 
   const handleFollowError = useCallback((error: string) => {
-    console.error('Follow error:', error);
-    Alert.alert('Follow Error', error);
+    console.error("Follow error:", error);
+    Alert.alert("Follow Error", error);
   }, []);
 
   const handleProfileLoadError = useCallback((error: string) => {
-    console.error('Profile load error:', error);
-    Alert.alert('Profile Error', error);
+    console.error("Profile load error:", error);
+    Alert.alert("Profile Error", error);
   }, []);
 
   return {

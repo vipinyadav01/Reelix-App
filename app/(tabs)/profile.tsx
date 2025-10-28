@@ -1,5 +1,5 @@
 import { Loader } from "@/components/Loader";
-import { COLORS } from "@/constants/theme";
+import { theme } from "@/constants/theme";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
 import { styles } from "@/styles/profile.styles";
@@ -20,11 +20,16 @@ import {
   Platform,
   TextInput,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Profile() {
   const { signOut, userId } = useAuth();
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-  const currentUser = useQuery(api.user.getUserByClerkId, userId ? { clerkId: userId } : "skip");
+  const insets = useSafeAreaInsets();
+  const currentUser = useQuery(
+    api.user.getUserByClerkId,
+    userId ? { clerkId: userId } : "skip",
+  );
 
   const [editedProfile, setEditedProfile] = useState({
     fullname: currentUser?.fullname || "",
@@ -52,12 +57,19 @@ export default function Profile() {
         </View>
         <View style={styles.headerRight}>
           <TouchableOpacity style={styles.headerIcon} onPress={() => signOut()}>
-            <Ionicons name="log-out-outline" size={24} color={COLORS.white} />
+            <Ionicons
+              name="log-out-outline"
+              size={24}
+              color={theme.colorWhite}
+            />
           </TouchableOpacity>
         </View>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 120 + insets.bottom }}
+      >
         <View style={styles.profileInfo}>
           {/* AVATAR & STATS */}
           <View style={styles.avatarAndStats}>
@@ -76,11 +88,15 @@ export default function Profile() {
                 <Text style={styles.statLabel}>Posts</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={styles.statNumber}>{currentUser.followers || 0}</Text>
+                <Text style={styles.statNumber}>
+                  {currentUser.followers || 0}
+                </Text>
                 <Text style={styles.statLabel}>Followers</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={styles.statNumber}>{currentUser.following || 0}</Text>
+                <Text style={styles.statNumber}>
+                  {currentUser.following || 0}
+                </Text>
                 <Text style={styles.statLabel}>Following</Text>
               </View>
             </View>
@@ -90,16 +106,25 @@ export default function Profile() {
           <View style={styles.userInfo}>
             <Text style={styles.name}>{currentUser.fullname}</Text>
             <Text style={styles.username}>@{currentUser.username}</Text>
-            {currentUser.bio && <Text style={styles.bio}>{currentUser.bio}</Text>}
+            {currentUser.bio && (
+              <Text style={styles.bio}>{currentUser.bio}</Text>
+            )}
           </View>
 
           {/* ACTION BUTTONS */}
           <View style={styles.actionButtons}>
-            <TouchableOpacity style={styles.editButton} onPress={() => setIsEditModalVisible(true)}>
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => setIsEditModalVisible(true)}
+            >
               <Text style={styles.editButtonText}>Edit Profile</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.shareButton}>
-              <Ionicons name="share-outline" size={20} color={COLORS.white} />
+              <Ionicons
+                name="share-outline"
+                size={20}
+                color={theme.colorWhite}
+              />
             </TouchableOpacity>
           </View>
         </View>
@@ -109,15 +134,15 @@ export default function Profile() {
           <View style={styles.postsHeader}>
             <Text style={styles.postsTitle}>Posts</Text>
           </View>
-          
+
           {posts.length === 0 ? (
             <NoPostsFound />
           ) : (
             <View style={styles.postsGrid}>
               {posts.map((post, index) => (
-                <TouchableOpacity 
-                  key={post._id} 
-                  style={styles.gridItem} 
+                <TouchableOpacity
+                  key={post._id}
+                  style={styles.gridItem}
                   onPress={() => setSelectedPost(post)}
                 >
                   <Image
@@ -149,7 +174,7 @@ export default function Profile() {
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>Edit Profile</Text>
                 <TouchableOpacity onPress={() => setIsEditModalVisible(false)}>
-                  <Ionicons name="close" size={24} color={COLORS.white} />
+                  <Ionicons name="close" size={24} color={theme.colorWhite} />
                 </TouchableOpacity>
               </View>
 
@@ -158,8 +183,10 @@ export default function Profile() {
                 <TextInput
                   style={styles.input}
                   value={editedProfile.fullname}
-                  onChangeText={(text) => setEditedProfile((prev) => ({ ...prev, fullname: text }))}
-                  placeholderTextColor={COLORS.gray}
+                  onChangeText={(text) =>
+                    setEditedProfile((prev) => ({ ...prev, fullname: text }))
+                  }
+                  placeholderTextColor={theme.color.textSecondary.dark}
                 />
               </View>
 
@@ -168,14 +195,19 @@ export default function Profile() {
                 <TextInput
                   style={[styles.input, styles.bioInput]}
                   value={editedProfile.bio}
-                  onChangeText={(text) => setEditedProfile((prev) => ({ ...prev, bio: text }))}
+                  onChangeText={(text) =>
+                    setEditedProfile((prev) => ({ ...prev, bio: text }))
+                  }
                   multiline
                   numberOfLines={4}
-                  placeholderTextColor={COLORS.gray}
+                  placeholderTextColor={theme.color.textSecondary.dark}
                 />
               </View>
 
-              <TouchableOpacity style={styles.saveButton} onPress={handleSaveProfile}>
+              <TouchableOpacity
+                style={styles.saveButton}
+                onPress={handleSaveProfile}
+              >
                 <Text style={styles.saveButtonText}>Save Changes</Text>
               </TouchableOpacity>
             </View>
@@ -195,7 +227,7 @@ export default function Profile() {
             <View style={styles.postDetailContainer}>
               <View style={styles.postDetailHeader}>
                 <TouchableOpacity onPress={() => setSelectedPost(null)}>
-                  <Ionicons name="close" size={24} color={COLORS.white} />
+                  <Ionicons name="close" size={24} color={theme.colorWhite} />
                 </TouchableOpacity>
               </View>
 
@@ -215,9 +247,15 @@ export default function Profile() {
 function NoPostsFound() {
   return (
     <View style={styles.emptyPostsContainer}>
-      <Ionicons name="images-outline" size={48} color={COLORS.gray} />
+      <Ionicons
+        name="images-outline"
+        size={48}
+        color={theme.color.textSecondary.dark}
+      />
       <Text style={styles.emptyPostsText}>No posts yet</Text>
-      <Text style={styles.emptyPostsSubtext}>Share your first moment with the world!</Text>
+      <Text style={styles.emptyPostsSubtext}>
+        Share your first moment with the world!
+      </Text>
     </View>
   );
 }

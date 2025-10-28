@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useProfileScreen } from './useProfileScreen';
-import { useProfileEvents } from './useProfileEvents';
-import { useSystemMonitoring } from './useSystemMonitoring';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useProfileScreen } from "./useProfileScreen";
+import { useProfileEvents } from "./useProfileEvents";
+import { useSystemMonitoring } from "./useSystemMonitoring";
 
 interface ProfileIntegrationOptions {
   targetUserId?: string;
@@ -13,12 +13,15 @@ export function useProfileIntegration({
   currentUserId,
 }: ProfileIntegrationOptions) {
   // --- Manager implementation (singleton) ---
-  type FollowStatus = 'following' | 'not_following' | 'pending';
+  type FollowStatus = "following" | "not_following" | "pending";
 
   class ProfileIntegrationManager {
     private static instance: ProfileIntegrationManager | null = null;
     private initializedKeys: Set<string> = new Set();
-    private followCache = new Map<string, { status: FollowStatus; ts: number }>();
+    private followCache = new Map<
+      string,
+      { status: FollowStatus; ts: number }
+    >();
     private debounceTimers = new Map<string, ReturnType<typeof setTimeout>>();
     private initializationPromises = new Map<string, Promise<void>>();
     private readonly ttlMs = 5 * 60 * 1000; // 5 minutes
@@ -144,10 +147,14 @@ export function useProfileIntegration({
   // Debounced follow actions (example wiring point)
   const onFollow = useCallback(() => {
     if (!targetUserId) return;
-    manager.debounce(`follow:${targetUserId}`, () => {
-      // Delegate to profileScreen hook's follow toggle
-      profileScreen.handleFollowToggle();
-    }, 500);
+    manager.debounce(
+      `follow:${targetUserId}`,
+      () => {
+        // Delegate to profileScreen hook's follow toggle
+        profileScreen.handleFollowToggle();
+      },
+      500,
+    );
   }, [manager, targetUserId, profileScreen]);
 
   return {
@@ -156,6 +163,8 @@ export function useProfileIntegration({
     ...monitoring,
     integrationState: state,
     onFollow,
-    isProfileIntegrated: targetUserId ? manager.isProfileIntegrated(targetUserId) : false,
+    isProfileIntegrated: targetUserId
+      ? manager.isProfileIntegrated(targetUserId)
+      : false,
   };
 }

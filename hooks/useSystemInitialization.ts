@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useUser } from '@clerk/clerk-expo';
-import { SystemManager } from './SystemManager';
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useUser } from "@clerk/clerk-expo";
+import { SystemManager } from "./SystemManager";
 
 export function useSystemInitialization() {
   const { user } = useUser();
   const userId = user?.id;
-  const [isReady, setIsReady] = useState(true); // Start as ready to allow app to load
+  const [isReady, setIsReady] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,7 +28,10 @@ export function useSystemInitialization() {
     }
 
     // If system is already ready for this user
-    if (systemManager.isSystemReady() && systemManager.getCurrentUserId() === userId) {
+    if (
+      systemManager.isSystemReady() &&
+      systemManager.getCurrentUserId() === userId
+    ) {
       setIsReady(true);
       setIsLoading(false);
       return;
@@ -45,7 +48,7 @@ export function useSystemInitialization() {
         await systemManager.initialize(userId);
         setIsReady(true);
       } catch (e: any) {
-        setError(e?.message || 'Initialization failed');
+        setError(e?.message || "Initialization failed");
         setIsReady(true); // Still allow app to work even if system init fails
         initializationRef.current = false;
         userIdRef.current = null;
@@ -70,5 +73,3 @@ export function useSystemInitialization() {
     systemManager,
   };
 }
-
-

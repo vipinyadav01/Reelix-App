@@ -18,7 +18,7 @@ import {
 import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { useNotificationsSimple as useNotifications } from "@/hooks/useNotificationsSimple";
 import { theme } from "@/constants/theme";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type VectorIconFamily = {
   getImageSource: (
@@ -32,7 +32,6 @@ export default function TabLayout() {
   const scheme = useColorScheme();
   const isDark = scheme === "dark";
   const { unreadCount } = useNotifications();
-  const insets = useSafeAreaInsets();
 
   const tintColor = isDark ? theme.colorWhite : theme.colorBlack;
   const inactiveTintColor = isDark ? "#FFFFFF90" : "#00000090";
@@ -40,7 +39,7 @@ export default function TabLayout() {
   const labelSelectedStyle = Platform.OS === "ios" ? { color: tintColor } : undefined;
 
   return (
-    <SafeAreaView edges={["bottom"]} style={[styles.container, { backgroundColor: theme.color.background.dark }] }>
+    <SafeAreaView edges={["bottom"]} style={styles.containerDark}>
       <NativeTabs
         badgeBackgroundColor={tintColor}
         labelStyle={{
@@ -225,5 +224,5 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  containerDark: { flex: 1, backgroundColor: theme.color.background.dark },
 });

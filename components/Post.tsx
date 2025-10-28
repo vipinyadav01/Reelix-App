@@ -41,7 +41,10 @@ export default function Post({ post }: PostProps) {
   const { user } = useUser();
   const router = useRouter();
 
-  const currentUser = useQuery(api.user.getUserByClerkId, user ? { clerkId: user.id } : "skip");
+  const currentUser = useQuery(
+    api.user.getUserByClerkId,
+    user ? { clerkId: user.id } : "skip",
+  );
 
   const toggleLike = useMutation(api.posts.toggleLike);
   const toggleBookmark = useMutation(api.bookmarks.toggleBookmark);
@@ -98,20 +101,65 @@ export default function Post({ post }: PostProps) {
         </TouchableOpacity>
         <View>
           <TouchableOpacity onPress={() => setShowMenu((v) => !v)}>
-            <MaterialCommunityIcons name="dots-horizontal" size={20} color={COLORS.white} />
+            <MaterialCommunityIcons
+              name="dots-horizontal"
+              size={20}
+              color={COLORS.white}
+            />
           </TouchableOpacity>
           {showMenu && (
-            <View style={{ position: 'absolute', top: 24, right: 0, backgroundColor: '#1a1a1a', borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', paddingVertical: 6, minWidth: 140, zIndex: 100 }}>
+            <View
+              style={{
+                position: "absolute",
+                top: 24,
+                right: 0,
+                backgroundColor: "#1a1a1a",
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.1)",
+                paddingVertical: 6,
+                minWidth: 140,
+                zIndex: 100,
+              }}
+            >
               {post.author._id === currentUser?._id && (
-                <TouchableOpacity onPress={handleEdit} style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 8 }}>
-                  <MaterialCommunityIcons name="pencil-outline" size={18} color={COLORS.white} />
-                  <Text style={{ color: COLORS.white, marginLeft: 8 }}>Edit</Text>
+                <TouchableOpacity
+                  onPress={handleEdit}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingHorizontal: 12,
+                    paddingVertical: 8,
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name="pencil-outline"
+                    size={18}
+                    color={COLORS.white}
+                  />
+                  <Text style={{ color: COLORS.white, marginLeft: 8 }}>
+                    Edit
+                  </Text>
                 </TouchableOpacity>
               )}
               {post.author._id === currentUser?._id && (
-                <TouchableOpacity onPress={handleDelete} style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 8 }}>
-                  <MaterialCommunityIcons name="trash-can-outline" size={18} color={COLORS.primary} />
-                  <Text style={{ color: COLORS.primary, marginLeft: 8 }}>Delete</Text>
+                <TouchableOpacity
+                  onPress={handleDelete}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingHorizontal: 12,
+                    paddingVertical: 8,
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name="trash-can-outline"
+                    size={18}
+                    color={COLORS.primary}
+                  />
+                  <Text style={{ color: COLORS.primary, marginLeft: 8 }}>
+                    Delete
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -135,11 +183,15 @@ export default function Post({ post }: PostProps) {
             <MaterialCommunityIcons
               name={isLiked ? "heart" : "heart-outline"}
               size={24}
-              color={isLiked ? '#ef4444' : COLORS.white}
+              color={isLiked ? "#ef4444" : COLORS.white}
             />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setShowComments(true)}>
-            <MaterialCommunityIcons name="comment-outline" size={22} color={COLORS.white} />
+            <MaterialCommunityIcons
+              name="comment-outline"
+              size={22}
+              color={COLORS.white}
+            />
           </TouchableOpacity>
         </View>
         <TouchableOpacity onPress={handleBookmark}>
@@ -154,7 +206,9 @@ export default function Post({ post }: PostProps) {
       {/* POST INFO */}
       <View style={styles.postInfo}>
         <Text style={styles.likesText}>
-          {post.likes > 0 ? `${post.likes.toLocaleString()} likes` : "Be the first to like"}
+          {post.likes > 0
+            ? `${post.likes.toLocaleString()} likes`
+            : "Be the first to like"}
         </Text>
         {post.caption && (
           <View style={styles.captionContainer}>
@@ -165,7 +219,9 @@ export default function Post({ post }: PostProps) {
 
         {post.comments > 0 && (
           <TouchableOpacity onPress={() => setShowComments(true)}>
-            <Text style={styles.commentsText}>View all {post.comments} comments</Text>
+            <Text style={styles.commentsText}>
+              View all {post.comments} comments
+            </Text>
           </TouchableOpacity>
         )}
 

@@ -1,16 +1,16 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useQuery, useMutation } from 'convex/react';
-import { useRouter } from 'expo-router';
-import { Alert } from 'react-native';
-import { api } from '@/convex/_generated/api';
-import { Id } from '@/convex/_generated/dataModel';
+import { useState, useEffect, useCallback } from "react";
+import { useQuery, useMutation } from "convex/react";
+import { useRouter } from "expo-router";
+import { Alert } from "react-native";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 
 interface ProfileData {
   user: any;
   posts: any[];
   stories: any[];
   followStatus: {
-    followStatus: 'following' | 'not_following' | 'pending';
+    followStatus: "following" | "not_following" | "pending";
     mutualFollow: boolean;
   } | null;
 }
@@ -29,7 +29,7 @@ interface UseProfileScreenReturn {
 
 export function useProfileScreen(
   targetUserId: string | undefined,
-  currentUserId: string | undefined
+  currentUserId: string | undefined,
 ): UseProfileScreenReturn {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
@@ -37,27 +37,29 @@ export function useProfileScreen(
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
 
   // Queries
-  const targetUser = useQuery(api.user.getUserByClerkId, 
-    targetUserId ? { clerkId: targetUserId } : "skip"
+  const targetUser = useQuery(
+    api.user.getUserByClerkId,
+    targetUserId ? { clerkId: targetUserId } : "skip",
   );
-  
-  const currentUser = useQuery(api.user.getUserByClerkId, 
-    currentUserId ? { clerkId: currentUserId } : "skip"
+
+  const currentUser = useQuery(
+    api.user.getUserByClerkId,
+    currentUserId ? { clerkId: currentUserId } : "skip",
   );
 
   const relationshipData = useQuery(
     api.user.getRelationshipData,
-    targetUser && targetUser._id ? { targetId: targetUser._id } : "skip"
+    targetUser && targetUser._id ? { targetId: targetUser._id } : "skip",
   );
 
   const userPosts = useQuery(
     api.posts.getUserPosts,
-    targetUser && targetUser._id ? { userId: targetUser._id } : "skip"
+    targetUser && targetUser._id ? { userId: targetUser._id } : "skip",
   );
 
   const userStories = useQuery(
     api.stories.getUserStories,
-    targetUser && targetUser._id ? { userId: targetUser._id } : "skip"
+    targetUser && targetUser._id ? { userId: targetUser._id } : "skip",
   );
 
   // Mutations
@@ -65,9 +67,7 @@ export function useProfileScreen(
   const respondToFollowRequest = useMutation(api.user.respondToFollowRequest);
 
   const isOwnProfile = Boolean(
-    targetUserId && 
-    currentUserId && 
-    targetUserId === currentUserId
+    targetUserId && currentUserId && targetUserId === currentUserId,
   );
 
   // Initialize profile data
@@ -78,12 +78,12 @@ export function useProfileScreen(
         setError(null);
 
         if (!targetUserId) {
-          setError('User ID is required');
+          setError("User ID is required");
           return;
         }
 
         if (!targetUser) {
-          setError('User not found');
+          setError("User not found");
           return;
         }
 
@@ -96,8 +96,8 @@ export function useProfileScreen(
 
         setProfileData(data);
       } catch (err) {
-        console.error('Error initializing profile:', err);
-        setError('Failed to load profile');
+        console.error("Error initializing profile:", err);
+        setError("Failed to load profile");
       } finally {
         setIsLoading(false);
       }
@@ -112,8 +112,9 @@ export function useProfileScreen(
     try {
       setIsLoading(true);
 
-      const currentFollowStatus = relationshipData?.followStatus === 'following';
-      
+      const currentFollowStatus =
+        relationshipData?.followStatus === "following";
+
       if (currentFollowStatus) {
         // Unfollow
         await toggleFollow({
@@ -128,13 +129,9 @@ export function useProfileScreen(
 
       // Refresh relationship data
       await handleRefresh();
-      
     } catch (err) {
-      console.error('Error toggling follow:', err);
-      Alert.alert(
-        'Error',
-        'Failed to update follow status. Please try again.'
-      );
+      console.error("Error toggling follow:", err);
+      Alert.alert("Error", "Failed to update follow status. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -145,18 +142,18 @@ export function useProfileScreen(
       // The queries will automatically refetch when dependencies change
       // This is handled by Convex's reactive system
     } catch (err) {
-      console.error('Error refreshing profile:', err);
-      setError('Failed to refresh profile');
+      console.error("Error refreshing profile:", err);
+      setError("Failed to refresh profile");
     }
   }, []);
 
   const handleEditProfile = useCallback(() => {
-    router.push('/profile/edit');
+    router.push("/profile/edit");
   }, [router]);
 
   const handleMessage = useCallback(() => {
     if (!targetUser) return;
-    
+
     // Navigate to chat/message screen
     router.push(`/chat/${targetUser._id}` as any);
   }, [targetUser, router]);

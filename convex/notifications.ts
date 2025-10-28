@@ -46,7 +46,7 @@ export const getNotifications = query({
           post,
           comment: comment?.content,
         };
-      })
+      }),
     );
 
     return notificationsWithInfo;

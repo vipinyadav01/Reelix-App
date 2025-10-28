@@ -17,7 +17,7 @@ export const toggleBookmark = mutation({
     const existing = await ctx.db
       .query("bookmarks")
       .withIndex("by_user_and_post", (q) =>
-        q.eq("userId", currentUser._id).eq("postId", args.postId)
+        q.eq("userId", currentUser._id).eq("postId", args.postId),
       )
       .first();
 
@@ -25,7 +25,10 @@ export const toggleBookmark = mutation({
       await ctx.db.delete(existing._id);
       return false;
     } else {
-      await ctx.db.insert("bookmarks", { userId: currentUser._id, postId: args.postId });
+      await ctx.db.insert("bookmarks", {
+        userId: currentUser._id,
+        postId: args.postId,
+      });
       return true;
     }
   },
@@ -57,7 +60,7 @@ export const getBookmarkedPosts = query({
       bookmarks.map(async (bookmark) => {
         const post = await ctx.db.get(bookmark.postId);
         return post;
-      })
+      }),
     );
     return bookmarksWithInfo;
   },

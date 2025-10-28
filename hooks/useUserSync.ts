@@ -8,17 +8,17 @@ export function useUserSync() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncComplete, setSyncComplete] = useState(false);
   const [timeoutReached, setTimeoutReached] = useState(false);
-  
+
   const createUser = useMutation(api.user.createUser);
   const existingUser = useQuery(
     api.user.getUserByClerkId,
-    user ? { clerkId: user.id } : "skip"
+    user ? { clerkId: user.id } : "skip",
   );
 
   // Timeout mechanism to prevent infinite loading
   useEffect(() => {
     if (!user || !isLoaded) return;
-    
+
     const timeout = setTimeout(() => {
       console.log("User sync timeout reached - allowing navigation to proceed");
       setTimeoutReached(true);
@@ -52,15 +52,18 @@ export function useUserSync() {
           clerkId: user.id,
           email: user.primaryEmailAddress?.emailAddress || "",
           fullname: user.fullName || "",
-          username: user.username || user.primaryEmailAddress?.emailAddress?.split("@")[0] || "",
+          username:
+            user.username ||
+            user.primaryEmailAddress?.emailAddress?.split("@")[0] ||
+            "",
           image: user.imageUrl || "",
           bio: "",
         };
-        
+
         console.log("Creating user in Convex:", userData);
         const createdUser = await createUser(userData);
         console.log("User created successfully:", createdUser);
-        
+
         // Only mark as complete if user was actually created
         if (createdUser) {
           setSyncComplete(true);
@@ -75,29 +78,42 @@ export function useUserSync() {
     };
 
     syncUser();
-  }, [isLoaded, user, existingUser, createUser, isSyncing, syncComplete, timeoutReached]);
+  }, [
+    isLoaded,
+    user,
+    existingUser,
+    createUser,
+    isSyncing,
+    syncComplete,
+    timeoutReached,
+  ]);
 
   // Don't wait for user sync if not signed in
-  if (!isLoaded) return { 
-    user: null, 
-    isLoading: true, 
-    syncComplete: false, 
-    isSyncing: false, 
-    timeoutReached: false 
-  };
-  if (!user) return { 
-    user: null, 
-    isLoading: false, 
-    syncComplete: true, 
-    isSyncing: false, 
-    timeoutReached: false 
-  };
+  if (!isLoaded)
+    return {
+      user: null,
+      isLoading: true,
+      syncComplete: false,
+      isSyncing: false,
+      timeoutReached: false,
+    };
+  if (!user)
+    return {
+      user: null,
+      isLoading: false,
+      syncComplete: true,
+      isSyncing: false,
+      timeoutReached: false,
+    };
 
-  return { 
-    user: existingUser, 
-    isLoading: !syncComplete && !timeoutReached && (existingUser === undefined || isSyncing),
+  return {
+    user: existingUser,
+    isLoading:
+      !syncComplete &&
+      !timeoutReached &&
+      (existingUser === undefined || isSyncing),
     syncComplete,
     isSyncing,
-    timeoutReached
+    timeoutReached,
   };
 }

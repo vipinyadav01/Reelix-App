@@ -77,7 +77,9 @@ export class SystemManager {
   cleanup(): void {
     if (!this.isInitialized) return;
     for (const fn of this.cleanupFunctions) {
-      try { fn(); } catch {}
+      try {
+        fn();
+      } catch {}
     }
     this.cleanupFunctions = [];
     this.isInitialized = false;
@@ -93,5 +95,3 @@ export class SystemManager {
     return this.currentUserId;
   }
 }
-
-

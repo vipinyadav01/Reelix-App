@@ -5,6 +5,7 @@ A modern social media application built with React Native, Expo, and real-time b
 ## 🚀 Features
 
 ### Current Implementation
+
 - **User Authentication**: Secure login/signup with Clerk
 - **Real-time Feed**: Dynamic posts with likes, comments, and interactions
 - **Stories System**: Instagram-style stories with view tracking
@@ -15,6 +16,7 @@ A modern social media application built with React Native, Expo, and real-time b
 - **Modern UI**: Dark theme with smooth animations and responsive design
 
 ### Technical Stack
+
 - **Frontend**: React Native with Expo
 - **Navigation**: Expo Router (file-based routing)
 - **Authentication**: Clerk
@@ -26,6 +28,7 @@ A modern social media application built with React Native, Expo, and real-time b
 ## 🛠️ Setup & Installation
 
 ### Prerequisites
+
 - Node.js (v16 or higher)
 - npm or yarn
 - Expo CLI
@@ -34,25 +37,30 @@ A modern social media application built with React Native, Expo, and real-time b
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd Reelix-App
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Environment Setup**
+
    - Create a `.env` file in the root directory
    - Add your Clerk and Convex environment variables:
+
    ```env
    EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_key
    EXPO_PUBLIC_CONVEX_URL=your_convex_url
    ```
 
 4. **Start the development server**
+
    ```bash
    npx expo start
    ```
@@ -106,6 +114,7 @@ convex/
 ## 🔧 Key Features Implementation
 
 ### Real-time Stories
+
 - 24-hour expiration with backend filtering
 - Always-visible add button on your story circle
 - Add story from Camera or Gallery (image/video)
@@ -119,28 +128,33 @@ convex/
 - Edit screen with Share Public and Close Friends (coming soon)
 
 ### User Profiles
+
 - Dynamic profile pages for any user
 - Posts grid with lazy loading
 - Follow/unfollow functionality
 - Profile editing capabilities
 
 ### Feed System
+
 - Infinite scroll with optimized performance
 - Real-time updates for likes, comments, follows
 - Story integration at the top
 
 ### Authentication Flow
+
 - Secure Clerk integration
 - User data synchronization with Convex
 - Protected routes and navigation
 
 ### UI/UX
+
 - Glassmorphism tab bar using BlurView with gradient overlay
 - Dark/light adaptive tab icon colors
 
 ## 🚧 Future Implementation Plans
 
 ### Phase 1: Enhanced Social Features
+
 - [ ] **Direct Messaging**: Real-time chat system
 - [ ] **Video Posts**: Support for video content
 - [ ] **Live Streaming**: Real-time video streaming
@@ -148,6 +162,7 @@ convex/
 - [ ] **Notifications**: Push notifications for interactions
 
 ### Phase 2: Content & Discovery
+
 - [ ] **Explore Page**: Algorithm-based content discovery
 - [ ] **Hashtags**: Content categorization and trending
 - [ ] **Reels/Short Videos**: TikTok-style short content
@@ -155,6 +170,7 @@ convex/
 - [ ] **Analytics**: User engagement metrics
 
 ### Phase 3: Advanced Features
+
 - [ ] **Stories Highlights**: Permanent story collections
 - [ ] **Group Stories**: Collaborative story creation
 - [ ] **AR Filters**: Augmented reality effects
@@ -162,6 +178,7 @@ convex/
 - [ ] **Multi-language**: Internationalization support
 
 ### Phase 4: Platform Expansion
+
 - [ ] **Web Version**: React web application
 - [ ] **Desktop App**: Electron-based desktop client
 - [ ] **API Integration**: Third-party service integrations
@@ -171,6 +188,7 @@ convex/
 ## 🎨 Design System
 
 The app uses a consistent dark theme with:
+
 - **Primary Color**: Custom green accent
 - **Background**: Deep dark tones
 - **Typography**: JetBrains Mono for headers, system fonts for body
@@ -208,6 +226,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 For support and questions:
+
 - Create an issue in the repository
 - Contact the development team
 - Check the documentation wiki

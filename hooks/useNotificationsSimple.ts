@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useState, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export interface Notification {
   id: string;
@@ -8,11 +8,11 @@ export interface Notification {
   data?: any;
   read: boolean;
   timestamp: number;
-  type: 'like' | 'comment' | 'follow' | 'mention' | 'system';
+  type: "like" | "comment" | "follow" | "mention" | "system";
 }
 
-const NOTIFICATIONS_STORAGE_KEY = '@notifications';
-const UNREAD_COUNT_STORAGE_KEY = '@unread_count';
+const NOTIFICATIONS_STORAGE_KEY = "@notifications";
+const UNREAD_COUNT_STORAGE_KEY = "@unread_count";
 
 // Generate unique ID to prevent duplicate keys
 const generateUniqueId = (): string => {
@@ -31,14 +31,16 @@ export const useNotificationsSimple = () => {
 
   // Update unread count when notifications change
   useEffect(() => {
-    const unread = notifications.filter(n => !n.read).length;
+    const unread = notifications.filter((n) => !n.read).length;
     setUnreadCount(unread);
     saveUnreadCount(unread);
   }, [notifications]);
 
   const loadNotifications = async () => {
     try {
-      const storedNotifications = await AsyncStorage.getItem(NOTIFICATIONS_STORAGE_KEY);
+      const storedNotifications = await AsyncStorage.getItem(
+        NOTIFICATIONS_STORAGE_KEY,
+      );
       if (storedNotifications) {
         const parsedNotifications = JSON.parse(storedNotifications);
         setNotifications(parsedNotifications);
@@ -49,7 +51,7 @@ export const useNotificationsSimple = () => {
         setUnreadCount(parseInt(storedCount, 10));
       }
     } catch (error) {
-      console.error('Error loading notifications:', error);
+      console.error("Error loading notifications:", error);
     } finally {
       setIsLoading(false);
     }
@@ -57,9 +59,12 @@ export const useNotificationsSimple = () => {
 
   const saveNotifications = async (newNotifications: Notification[]) => {
     try {
-      await AsyncStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify(newNotifications));
+      await AsyncStorage.setItem(
+        NOTIFICATIONS_STORAGE_KEY,
+        JSON.stringify(newNotifications),
+      );
     } catch (error) {
-      console.error('Error saving notifications:', error);
+      console.error("Error saving notifications:", error);
     }
   };
 
@@ -67,11 +72,13 @@ export const useNotificationsSimple = () => {
     try {
       await AsyncStorage.setItem(UNREAD_COUNT_STORAGE_KEY, count.toString());
     } catch (error) {
-      console.error('Error saving unread count:', error);
+      console.error("Error saving unread count:", error);
     }
   };
 
-  const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
+  const addNotification = (
+    notification: Omit<Notification, "id" | "timestamp" | "read">,
+  ) => {
     const newNotification: Notification = {
       ...notification,
       id: generateUniqueId(),
@@ -79,7 +86,7 @@ export const useNotificationsSimple = () => {
       read: false,
     };
 
-    setNotifications(prev => {
+    setNotifications((prev) => {
       const updated = [newNotification, ...prev];
       saveNotifications(updated);
       return updated;
@@ -87,9 +94,9 @@ export const useNotificationsSimple = () => {
   };
 
   const markAsRead = (id: string) => {
-    setNotifications(prev => {
-      const updated = prev.map(notification =>
-        notification.id === id ? { ...notification, read: true } : notification
+    setNotifications((prev) => {
+      const updated = prev.map((notification) =>
+        notification.id === id ? { ...notification, read: true } : notification,
       );
       saveNotifications(updated);
       return updated;
@@ -97,8 +104,11 @@ export const useNotificationsSimple = () => {
   };
 
   const markAllAsRead = () => {
-    setNotifications(prev => {
-      const updated = prev.map(notification => ({ ...notification, read: true }));
+    setNotifications((prev) => {
+      const updated = prev.map((notification) => ({
+        ...notification,
+        read: true,
+      }));
       saveNotifications(updated);
       return updated;
     });
@@ -110,23 +120,20 @@ export const useNotificationsSimple = () => {
   };
 
   const removeNotification = (id: string) => {
-    setNotifications(prev => {
-      const updated = prev.filter(notification => notification.id !== id);
+    setNotifications((prev) => {
+      const updated = prev.filter((notification) => notification.id !== id);
       saveNotifications(updated);
       return updated;
     });
   };
 
   const getUnreadNotifications = () => {
-    return notifications.filter(notification => !notification.read);
+    return notifications.filter((notification) => !notification.read);
   };
 
-  const getNotificationsByType = (type: Notification['type']) => {
-    return notifications.filter(notification => notification.type === type);
+  const getNotificationsByType = (type: Notification["type"]) => {
+    return notifications.filter((notification) => notification.type === type);
   };
-
-
-
 
   return {
     notifications,

@@ -1,6 +1,6 @@
-import { useEffect, useCallback, useRef } from 'react';
-import { useQuery } from 'convex/react';
-import { api } from '@/convex/_generated/api';
+import { useEffect, useCallback, useRef } from "react";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 interface SystemMonitoringOptions {
   currentUserId?: string;
@@ -17,22 +17,21 @@ export function useSystemMonitoring({
   onUserStatusUpdate,
   onError,
 }: SystemMonitoringOptions) {
-  
   // Monitor user data changes
   const currentUser = useQuery(
     api.user.getUserByClerkId,
-    currentUserId ? { clerkId: currentUserId } : "skip"
+    currentUserId ? { clerkId: currentUserId } : "skip",
   );
 
   const targetUser = useQuery(
     api.user.getUserByClerkId,
-    targetUserId ? { clerkId: targetUserId } : "skip"
+    targetUserId ? { clerkId: targetUserId } : "skip",
   );
 
   // Monitor follow status changes
   const followStatus = useQuery(
     api.user.getRelationshipData,
-    targetUser && targetUser._id ? { targetId: targetUser._id } : "skip"
+    targetUser && targetUser._id ? { targetId: targetUser._id } : "skip",
   );
 
   // Handle follow status updates
@@ -53,7 +52,7 @@ export function useSystemMonitoring({
     const id = currentUser._id as string | undefined;
     if (id && lastCurrentUserIdRef.current !== id) {
       lastCurrentUserIdRef.current = id;
-      onUserStatusUpdate(id, 'online');
+      onUserStatusUpdate(id, "online");
     }
   }, [currentUser, onUserStatusUpdate]);
 
@@ -63,27 +62,30 @@ export function useSystemMonitoring({
     const id = targetUser._id as string | undefined;
     if (id && lastTargetUserIdRef.current !== id) {
       lastTargetUserIdRef.current = id;
-      onUserStatusUpdate(id, 'online');
+      onUserStatusUpdate(id, "online");
     }
   }, [targetUser, onUserStatusUpdate]);
 
   // Error handling
-  const handleError = useCallback((error: string) => {
-    console.error('System monitoring error:', error);
-    if (onError) {
-      onError(error);
-    }
-  }, [onError]);
+  const handleError = useCallback(
+    (error: string) => {
+      console.error("System monitoring error:", error);
+      if (onError) {
+        onError(error);
+      }
+    },
+    [onError],
+  );
 
   // Start monitoring
   const startMonitoring = useCallback(() => {
-    console.log('System monitoring started');
+    console.log("System monitoring started");
     // Additional monitoring logic can be added here
   }, []);
 
   // Stop monitoring
   const stopMonitoring = useCallback(() => {
-    console.log('System monitoring stopped');
+    console.log("System monitoring stopped");
     // Cleanup logic can be added here
   }, []);
 

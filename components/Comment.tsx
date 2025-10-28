@@ -14,7 +14,10 @@ interface Comment {
 export default function CommentItem({ comment }: { comment: Comment }) {
   return (
     <View style={styles.commentContainer}>
-      <Image source={{ uri: comment.user.image }} style={styles.commentAvatar} />
+      <Image
+        source={{ uri: comment.user.image }}
+        style={styles.commentAvatar}
+      />
       <View style={styles.commentContent}>
         <Text style={styles.commentUsername}>{comment.user.fullname}</Text>
         <Text style={styles.commentText}>{comment.content}</Text>
