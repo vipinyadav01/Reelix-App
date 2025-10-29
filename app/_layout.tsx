@@ -1,24 +1,25 @@
+import React, { useCallback, useEffect } from "react";
+import { Platform } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import InitialLayout from "@/components/InitialLayout";
-import ClerkAndConvexProvider from "@/providers/ClerkAndConvexProvider";
 import { SplashScreen } from "expo-router";
 import { useFonts } from "expo-font";
-import { useCallback, useEffect } from "react";
 import * as NavigationBar from "expo-navigation-bar";
-import { Platform } from "react-native";
-
 import { StatusBar } from "expo-status-bar";
 
-SplashScreen.preventAutoHideAsync();
+import InitialLayout from "@/components/InitialLayout";
+import ClerkAndConvexProvider from "@/providers/ClerkAndConvexProvider";
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     "JetBrainsMono-Medium": require("../assets/fonts/JetBrainsMono-Medium.ttf"),
   });
 
   const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded) await SplashScreen.hideAsync();
-  }, [fontsLoaded]);
+    if (fontsLoaded || fontError) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, fontError]);
 
   useEffect(() => {
     if (Platform.OS === "android") {
@@ -27,14 +28,21 @@ export default function RootLayout() {
     }
   }, []);
 
+  if (!fontsLoaded && !fontError) {
+    return null;
+  }
+
   return (
     <ClerkAndConvexProvider>
       <SafeAreaProvider>
-        <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }} onLayout={onLayoutRootView}>
+        <SafeAreaView
+          style={{ flex: 1, backgroundColor: "#000" }}
+          onLayout={onLayoutRootView}
+        >
           <InitialLayout />
         </SafeAreaView>
+        <StatusBar style="dark" />
       </SafeAreaProvider>
-      <StatusBar style="light" />
     </ClerkAndConvexProvider>
   );
 }
