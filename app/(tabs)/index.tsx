@@ -77,7 +77,7 @@ export default function Index() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={[
             styles.feedContainer,
-            { paddingBottom: 120 + insets.bottom },
+            { paddingBottom: 80 + insets.bottom },
           ]}
           ListHeaderComponent={<StoriesSection />}
           refreshControl={

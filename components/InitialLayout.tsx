@@ -69,7 +69,11 @@ export default function InitialLayout() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: dynamicBackgroundColor }}>
+    <View style={{ 
+      flex: 1, 
+      backgroundColor: dynamicBackgroundColor,
+      paddingBottom: 0
+    }}>
       <Slot />
     </View>
   );
