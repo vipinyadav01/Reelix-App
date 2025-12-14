@@ -10,6 +10,7 @@ import {
   StatusBar,
   Animated,
   Alert,
+  Dimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useUser } from "@clerk/clerk-expo";
@@ -19,16 +20,24 @@ import { Ionicons } from "@expo/vector-icons";
 import { theme } from "@/constants/theme";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
+import { Video, ResizeMode } from "expo-av";
 import { useMutation } from "convex/react";
+import { Id } from "@/convex/_generated/dataModel";
 import { api } from "@/convex/_generated/api";
 import * as FileSystem from "expo-file-system";
+
+const SCREEN_WIDTH = Dimensions.get("window").width;
 
 export default function CreateScreen() {
   const router = useRouter();
   const { user } = useUser();
   const [caption, setCaption] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [mediaType, setMediaType] = useState<"image" | "video">("image");
+  const [aspectRatio, setAspectRatio] = useState(1);
   const [isSharing, setIsSharing] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState("Share");
+  
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
@@ -56,7 +65,7 @@ export default function CreateScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+  }, [fadeAnim, slideAnim, scaleAnim]);
 
   const pickImage = async () => {
     try {
@@ -65,27 +74,44 @@ export default function CreateScreen() {
       if (status !== "granted") {
         Alert.alert(
           "Permission Required",
-          "Camera roll access is required to pick an image.",
+          "Camera roll access is required to pick media.",
         );
         return;
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ImagePicker.MediaTypeOptions.All, // Allow videos
         allowsEditing: true,
-        aspect: [1, 1],
         quality: 0.8,
+        // Removed fixed aspect ratio to allow users to choose their own crop
+        // or keep original aspect ratio if the OS picker supports it
       });
 
       if (!result.canceled) {
-        setSelectedImage(result.assets[0].uri);
+        const asset = result.assets[0];
+        
+        if (asset.type === 'video') {
+           if (asset.duration && asset.duration > 15000) { // 15 seconds
+             Alert.alert("Video too long", "Please select a video shorter than 15 seconds.");
+             return;
+           }
+           setMediaType("video");
+        } else {
+           setMediaType("image");
+        }
+
+        setSelectedImage(asset.uri);
+        setAspectRatio(asset.width / asset.height);
+        
+        // Reset scale for nice animation
+        scaleAnim.setValue(0.8);
         Animated.spring(scaleAnim, {
           toValue: 1,
           useNativeDriver: true,
         }).start();
       }
-    } catch (err) {
-      Alert.alert("Error", "Unable to open image picker.");
+    } catch (_err) {
+      Alert.alert("Error", "Unable to open picker.");
     }
   };
 
@@ -93,25 +119,27 @@ export default function CreateScreen() {
     if (!selectedImage) return;
     try {
       setIsSharing(true);
+      setUploadStatus("Uploading...");
+      
       Animated.timing(progressAnim, {
-        toValue: 1,
-        duration: 2000,
+        toValue: 0.5,
+        duration: 1000,
         useNativeDriver: false,
       }).start();
 
       const uploadUrl = await generateUploadUrl();
-      let storageId: string;
+      let storageId: Id<"_storage">;
 
       if (Platform.OS === "web") {
         const blob = await (await fetch(selectedImage)).blob();
         const resp = await fetch(uploadUrl, {
           method: "POST",
-          headers: { "Content-Type": blob.type || "image/jpeg" },
+          headers: { "Content-Type": blob.type || (mediaType === 'video' ? "video/mp4" : "image/jpeg") },
           body: blob,
         });
         if (!resp.ok) throw new Error("Upload Failed");
         const json = await resp.json();
-        storageId = json.storageId;
+        storageId = json.storageId as Id<"_storage">;
       } else {
         const uploadResult = await FileSystem.uploadAsync(
           uploadUrl,
@@ -119,14 +147,27 @@ export default function CreateScreen() {
           {
             httpMethod: "POST",
             fieldName: "file",
-            mimeType: "image/jpeg",
+            mimeType: mediaType === 'video' ? "video/mp4" : "image/jpeg",
           },
         );
         if (uploadResult.status !== 200) throw new Error("Upload Failed");
-        storageId = JSON.parse(uploadResult.body).storageId;
+        storageId = JSON.parse(uploadResult.body).storageId as Id<"_storage">;
       }
 
-      await createPost({ storageId, caption });
+      setUploadStatus("Finishing...");
+      Animated.timing(progressAnim, {
+        toValue: 0.9,
+        duration: 500,
+        useNativeDriver: false,
+      }).start();
+
+      await createPost({ storageId, caption, aspectRatio, format: mediaType });
+      
+      Animated.timing(progressAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: false,
+      }).start();
 
       Alert.alert("Success", "Your post has been shared!", [
         {
@@ -156,6 +197,7 @@ export default function CreateScreen() {
       progressAnim.setValue(0);
     } finally {
       setIsSharing(false);
+      setUploadStatus("Share");
     }
   };
 
@@ -232,7 +274,8 @@ export default function CreateScreen() {
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
+      // Add a small offset if needed, or adjust based on header height
+      keyboardVerticalOffset={Platform.OS === "ios" ? 88 : 0} 
     >
       <StatusBar
         barStyle="light-content"
@@ -300,24 +343,24 @@ export default function CreateScreen() {
 
         {/* Progress Bar */}
         {isSharing && (
-          <Animated.View style={styles.progressContainer}>
-            <Animated.View
-              style={[
-                styles.progressBar,
-                {
-                  width: progressAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: ["0%", "100%"],
-                  }),
-                },
-              ]}
+          <View style={{ width: "100%", height: 3, backgroundColor: "rgba(255,255,255,0.1)" }}>
+             <Animated.View
+              style={{
+                height: "100%",
+                backgroundColor: theme.primary || "#E1306C",
+                width: progressAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ["0%", "100%"],
+                }),
+              }}
             />
-          </Animated.View>
+          </View>
         )}
 
         {/* Scrollable Content */}
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          style={{ flex: 1 }}
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: 120 }]} // Add padding for keyboard
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -327,35 +370,59 @@ export default function CreateScreen() {
               { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
             ]}
           >
-            {/* Image Preview */}
-            <Animated.View
-              style={[
-                styles.imageContainer,
-                { transform: [{ scale: scaleAnim }] },
-              ]}
-            >
-              <Image
-                source={{ uri: selectedImage }}
-                style={styles.previewImage}
-                contentFit="cover"
-                transition={300}
-              />
-              <View style={styles.imageOverlay}>
-                <TouchableOpacity
-                  style={styles.changeImageButton}
-                  onPress={pickImage}
-                  disabled={isSharing}
-                  activeOpacity={0.8}
-                >
-                  <Ionicons
-                    name="camera"
-                    size={18}
-                    color={theme.colorWhite || "#fff"}
+            {/* Image Preview - Dynamic Aspect Ratio */}
+            <View style={{ padding: 16 }}>
+              <Animated.View
+                style={[
+                  styles.imageContainer,
+                  { 
+                    transform: [{ scale: scaleAnim }],
+                    aspectRatio: aspectRatio,
+                    // Use a max height but ensure the view doesn't get cut off weirdly
+                    // We let the container height be driven by aspect ratio up to a limit
+                    maxHeight: SCREEN_WIDTH * 1.5,
+                    width: '100%',
+                    alignSelf: 'center',
+                    borderRadius: 12,
+                    overflow: 'hidden',
+                    backgroundColor: '#1a1a1a', // placeholder background
+                  },
+                ]}
+              >
+                {mediaType === 'video' ? (
+                  <Video
+                    source={{ uri: selectedImage }}
+                    style={{ width: '100%', height: '100%' }}
+                    resizeMode={ResizeMode.CONTAIN}
+                    useNativeControls
+                    isLooping
+                    shouldPlay
                   />
-                  <Text style={styles.changeImageText}>Change</Text>
-                </TouchableOpacity>
-              </View>
-            </Animated.View>
+                ) : (
+                  <Image
+                    source={{ uri: selectedImage }}
+                    style={{ width: '100%', height: '100%' }}
+                    contentFit="contain" 
+                    transition={300}
+                  />
+                )}
+                <View style={styles.imageOverlay}>
+                  <TouchableOpacity
+                    style={styles.changeImageButton}
+                    onPress={pickImage}
+                    disabled={isSharing}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons
+                      name="camera"
+                      size={18}
+                      color={theme.colorWhite || "#fff"}
+                    />
+                    <Text style={styles.changeImageText}>Change</Text>
+                  </TouchableOpacity>
+                </View>
+              </Animated.View>
+            </View>
 
             {/* Caption Input */}
             <View style={styles.inputSection}>
@@ -374,21 +441,28 @@ export default function CreateScreen() {
                     <Text style={styles.userHandle}>
                       @{user?.username || "user"}
                     </Text>
+                    {isSharing && (
+                      <Text style={{ fontSize: 12, color: theme.primary || "#E1306C", marginTop: 2 }}>
+                        {uploadStatus}
+                      </Text>
+                    )}
                   </View>
                 </View>
 
                 <View style={styles.inputWrapper}>
                   <TextInput
                     style={styles.captionInput}
-                    placeholder="Write a caption... (optional)"
+                    placeholder="Write a caption..."
                     placeholderTextColor={
                       theme.color?.textSecondary?.dark || "#888"
                     }
                     multiline
+                    numberOfLines={4} // Give it some initial height
                     value={caption}
                     onChangeText={setCaption}
                     editable={!isSharing}
                     maxLength={2200}
+                    scrollEnabled={true} // Explicitly enable scrolling in TextInput
                   />
                   <Text style={styles.characterCount}>
                     {caption.length}/2200

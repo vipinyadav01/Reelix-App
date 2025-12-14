@@ -1,4 +1,3 @@
-import { STORIES } from "@/constants/mock-data";
 import { styles } from "@/styles/feed.styles";
 import { ScrollView } from "react-native";
 import Story from "./Story";
@@ -15,7 +14,10 @@ const StoriesSection = () => {
     api.user.getUserByClerkId,
     user?.id ? { clerkId: user.id } : "skip",
   );
-  let data = liveStories && liveStories.length > 0 ? liveStories : STORIES;
+  
+  // Use live data or empty array, never mock
+  let data = liveStories || [];
+
   if (user) {
     const meId = (meConvex?._id as any) ? String(meConvex?._id as any) : null;
     const existingMe = meId
@@ -44,7 +46,7 @@ const StoriesSection = () => {
       showsHorizontalScrollIndicator={false}
       style={styles.storiesContainer}
     >
-      {data.map((story) => (
+      {data.map((story: any) => (
         <Story key={story.id} story={story} />
       ))}
     </ScrollView>

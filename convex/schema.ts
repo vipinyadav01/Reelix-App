@@ -23,9 +23,11 @@ export default defineSchema({
     userId: v.id("users"),
     imageUrl: v.string(),
     storageId: v.id("_storage"),
+    format: v.optional(v.string()),
     caption: v.optional(v.string()),
     likes: v.number(),
     comments: v.number(),
+    aspectRatio: v.optional(v.number()),
   }).index("by_user", ["userId"]),
 
   likes: defineTable({

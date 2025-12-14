@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getAuthenticatedUser } from "./user";
+import { Doc } from "./_generated/dataModel";
 
 export const generateUploadUrl = mutation(async (ctx) => {
   const identity = await ctx.auth.getUserIdentity();
@@ -12,6 +13,8 @@ export const createPost = mutation({
   args: {
     caption: v.optional(v.string()),
     storageId: v.id("_storage"),
+    aspectRatio: v.optional(v.number()),
+    format: v.optional(v.string()),
   },
 
   handler: async (ctx, args) => {
@@ -26,6 +29,8 @@ export const createPost = mutation({
       imageUrl,
       storageId: args.storageId,
       caption: args.caption,
+      aspectRatio: args.aspectRatio,
+      format: args.format || "image",
       likes: 0,
       comments: 0,
     });
@@ -214,7 +219,7 @@ export const getPostsByUser = query({
     userId: v.optional(v.id("users")),
   },
   handler: async (ctx, args) => {
-    let user;
+    let user: Doc<"users"> | null = null;
 
     if (args.userId) {
       // Get specific user by ID
@@ -238,7 +243,7 @@ export const getPostsByUser = query({
 
     const posts = await ctx.db
       .query("posts")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId || user._id))
+      .withIndex("by_user", (q) => q.eq("userId", args.userId || user!._id))
       .collect();
 
     return posts;

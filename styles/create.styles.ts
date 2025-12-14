@@ -155,21 +155,21 @@ export const styles = StyleSheet.create({
   },
   // Content Styles
   content: {
-    flex: 1,
+    // Removed flex: 1 to allow ScrollView to handle content height naturally
   },
   scrollContent: {
     flexGrow: 1,
   },
   imageSection: {
     width: width,
-    height: width,
+    height: width, // Default, but overridden by dynamic styles
     backgroundColor: theme.color.backgroundElement.dark,
     justifyContent: "center",
     alignItems: "center",
   },
   imageContainer: {
     width: "100%",
-    height: "100%",
+    // height: "100%", // Let height be determined by aspect ratio
     position: "relative",
   },
   previewImage: {
@@ -206,25 +206,31 @@ export const styles = StyleSheet.create({
     padding: 16,
   },
   changeImageButton: {
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    backgroundColor: "rgba(0, 0, 0, 0.75)",
     borderRadius: 20,
     overflow: "hidden",
-  },
-  changeImageButtonInner: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+    gap: 8,
+  },
+  changeImageButtonInner: {
+    // Unused but kept for reference or removal
+    flexDirection: "row",
+    alignItems: "center",
   },
   changeImageText: {
     color: theme.colorWhite,
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: "600",
+    letterSpacing: 0.5,
   },
   inputSection: {
     padding: 20,
-    flex: 1,
+    // flex: 1, // Removed to allow natural height
   },
   captionContainer: {
     gap: 16,

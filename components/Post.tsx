@@ -5,12 +5,13 @@ import { styles } from "@/styles/feed.styles";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import { Image } from "expo-image";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import CommentsModal from "./CommentsModal";
 import { formatDistanceToNow } from "date-fns";
 import { useUser } from "@clerk/clerk-expo";
+import { Video, ResizeMode } from "expo-av";
 
 type PostProps = {
   post: {
@@ -22,6 +23,8 @@ type PostProps = {
     _creationTime: number;
     isLiked: boolean;
     isBookmarked: boolean;
+    aspectRatio?: number;
+    format?: string;
     author: {
       _id: string;
       username: string;
@@ -167,14 +170,27 @@ export default function Post({ post }: PostProps) {
         </View>
       </View>
 
-      {/* IMAGE */}
-      <Image
-        source={post.imageUrl}
-        style={styles.postImage}
-        contentFit="cover"
-        transition={200}
-        cachePolicy="memory-disk"
-      />
+      {/* MEDIA */}
+      <View style={{ width: '100%', aspectRatio: post.aspectRatio || 1 }}>
+        {post.format === 'video' ? (
+          <Video
+            source={{ uri: post.imageUrl }}
+            style={{ width: '100%', height: '100%' }}
+            resizeMode={ResizeMode.COVER}
+            isLooping
+            useNativeControls
+            // shouldPlay={true} // Optional: Enable autoplay if desired, but default to manual or handle visibility
+          />
+        ) : (
+          <Image
+            source={post.imageUrl}
+            style={{ width: '100%', height: '100%' }}
+            contentFit="cover"
+            transition={200}
+            cachePolicy="memory-disk"
+          />
+        )}
+      </View>
 
       {/* POST ACTIONS */}
       <View style={styles.postActions}>

@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "REELIX-APP",
-    "slug": "REELIX-APP",
+    "slug": "reelix",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -9,13 +9,18 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "Reelix-Vipin",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.vips2sorganization.reelix"
     },
     "web": {
       "bundler": "metro",
@@ -44,6 +49,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "af4cfade-0486-45a8-af8c-432be4acdc54"
+      }
+    },
+    "owner": "vips2s-organization"
   }
 }

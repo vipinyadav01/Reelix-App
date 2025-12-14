@@ -41,7 +41,7 @@ export default function Index() {
   if (posts === undefined) {
     return (
       <View style={styles.container}>
-        <Header onSignOut={handleSignOut} />
+        <Header onSignOut={handleSignOut} paddingTop={insets.top} />
         <Loader />
       </View>
     );
@@ -56,7 +56,7 @@ export default function Index() {
         backgroundColor={theme.color?.background?.dark || "#000"}
       />
 
-      <Header onSignOut={handleSignOut} />
+      <Header onSignOut={handleSignOut} paddingTop={insets.top} />
 
       {safePosts.length === 0 ? (
         <EmptyState
@@ -99,8 +99,8 @@ export default function Index() {
 }
 
 /** 🔹 Reusable Header Component */
-const Header = ({ onSignOut }: { onSignOut: () => void }) => (
-  <View style={styles.header}>
+const Header = ({ onSignOut, paddingTop }: { onSignOut: () => void; paddingTop: number }) => (
+  <View style={[styles.header, { paddingTop: paddingTop - 40 }]}> 
     <View style={styles.headerContent}>
       <View style={styles.headerLeft}>
         <Text style={styles.headerTitle}>Reelix</Text>
