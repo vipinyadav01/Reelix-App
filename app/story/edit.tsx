@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, Image, TouchableOpacity } from "react-native";
 import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -43,43 +43,31 @@ export default function EditStory() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.preview}>
+    <View className="flex-1 p-4 gap-4">
+      <View className="flex-1 items-center justify-center">
         {uri && type === "image" && (
-          <Image source={{ uri }} style={styles.media} />
+          <Image source={{ uri }} className="w-full h-full" resizeMode="contain" />
         )}
         {uri && type === "video" && (
-          <Text style={styles.videoText}>Video selected</Text>
+          <Text className="text-white">Video selected</Text>
         )}
       </View>
-      <View style={styles.actions}>
+      <View className="flex-row gap-3 pb-6">
         <TouchableOpacity
-          style={[styles.btn, styles.primary]}
+          className="flex-1 p-3.5 rounded-xl items-center bg-[#4ade80]"
           disabled={submitting}
           onPress={() => upload("public")}
         >
-          <Text style={styles.btnText}>Share Public</Text>
+          <Text className="text-white font-bold">Share Public</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.btn, styles.secondary]}
+          className="flex-1 p-3.5 rounded-xl items-center bg-[#374151]"
           disabled={submitting}
           onPress={() => upload("close_friends")}
         >
-          <Text style={styles.btnText}>Close Friends (Soon)</Text>
+          <Text className="text-white font-bold">Close Friends (Soon)</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 16 },
-  preview: { flex: 1, alignItems: "center", justifyContent: "center" },
-  media: { width: "100%", height: "100%", resizeMode: "contain" },
-  videoText: { color: "#fff" },
-  actions: { flexDirection: "row", gap: 12, paddingBottom: 24 },
-  btn: { flex: 1, padding: 14, borderRadius: 10, alignItems: "center" },
-  primary: { backgroundColor: "#4ade80" },
-  secondary: { backgroundColor: "#374151" },
-  btnText: { color: "#fff", fontWeight: "700" },
-});

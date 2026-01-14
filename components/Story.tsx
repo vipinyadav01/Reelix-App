@@ -1,4 +1,3 @@
-import { styles } from "@/styles/feed.styles";
 import {
   View,
   Text,
@@ -54,28 +53,23 @@ export default function StoryItem({ story }: { story: Story }) {
 
     router.push(`/story/${encodeURIComponent(story.id)}` as any);
   };
+
+  const getRingColor = () => {
+    if (!story.hasStory) return "border-transparent";
+    if (story.viewed) return "border-neutral-600";
+    return "border-pink-500";
+  };
+
   return (
-    <TouchableOpacity style={styles.storyWrapper} onPress={handlePress}>
+    <TouchableOpacity className="items-center mr-4" onPress={handlePress}>
       <View
-        style={[
-          styles.storyRing,
-          !story.hasStory && styles.noStory,
-          story.viewed && styles.viewedStory,
-        ]}
+        className={`w-16 h-16 rounded-full border-2 p-0.5 justify-center items-center ${getRingColor()}`}
       >
-        <Image source={{ uri: story.avatar }} style={styles.storyAvatar} />
+        <Image source={{ uri: story.avatar }} className="w-14 h-14 rounded-full bg-neutral-800" resizeMode="cover" />
         {story.uploading && (
           <Animated.View
+            className="absolute left-0 top-0 right-0 bottom-0 rounded-full border-2 border-transparent border-t-white"
             style={{
-              position: "absolute",
-              left: 0,
-              top: 0,
-              right: 0,
-              bottom: 0,
-              borderRadius: 34,
-              borderWidth: 2,
-              borderColor: "transparent",
-              borderTopColor: "#ffffff",
               transform: [
                 {
                   rotate: spinAnim.interpolate({
@@ -88,22 +82,12 @@ export default function StoryItem({ story }: { story: Story }) {
           />
         )}
         {story.onAdd && (
-          <View
-            style={{
-              position: "absolute",
-              bottom: -2,
-              right: -2,
-              backgroundColor: "#fff",
-              borderRadius: 10,
-              paddingHorizontal: 4,
-              paddingVertical: 0,
-            }}
-          >
-            <Text style={{ color: "#000", fontSize: 12 }}>+</Text>
+          <View className="absolute bottom-0 right-0 bg-white rounded-full w-4 h-4 justify-center items-center border border-black">
+            <Text className="text-black text-xs font-bold leading-3">+</Text>
           </View>
         )}
       </View>
-      <Text style={styles.storyUsername}>{story.username}</Text>
+      <Text className="text-white text-xs mt-1 text-center truncate w-16" numberOfLines={1}>{story.username}</Text>
     </TouchableOpacity>
   );
 }

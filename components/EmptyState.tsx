@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "@/constants/theme";
 
@@ -21,8 +21,8 @@ export default function EmptyState({
   buttonIcon,
 }: EmptyStateProps) {
   return (
-    <View style={styles.container}>
-      <View style={styles.iconContainer}>
+    <View className="flex-1 justify-center items-center px-10 py-16 bg-black">
+      <View className="mb-6 opacity-80">
         <Ionicons
           name={icon as any}
           size={64}
@@ -30,78 +30,26 @@ export default function EmptyState({
         />
       </View>
 
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.subtitle}>{subtitle}</Text>
+      <Text className="text-2xl font-bold text-white text-center mb-3 tracking-tighter">{title}</Text>
+      <Text className="text-base text-neutral-400 text-center leading-6 mb-8 px-5">{subtitle}</Text>
 
       {buttonText && onButtonPress && (
-        <TouchableOpacity style={styles.button} onPress={onButtonPress}>
+        <TouchableOpacity 
+          className="bg-blue-500 px-6 py-3 rounded-full flex-row items-center justify-center shadow-lg shadow-blue-500/30"
+          onPress={onButtonPress}
+          activeOpacity={0.8}
+        >
           {buttonIcon && (
             <Ionicons
               name={buttonIcon as any}
               size={20}
-              color={theme.colorBlack}
-              style={styles.buttonIcon}
+              color="black"
+              style={{ marginRight: 8 }}
             />
           )}
-          <Text style={styles.buttonText}>{buttonText}</Text>
+          <Text className="text-black text-base font-semibold">{buttonText}</Text>
         </TouchableOpacity>
       )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 40,
-    paddingVertical: 60,
-    backgroundColor: theme.color.background.dark,
-  },
-  iconContainer: {
-    marginBottom: 24,
-    opacity: 0.8,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: theme.colorWhite,
-    textAlign: "center",
-    marginBottom: 12,
-    letterSpacing: -0.5,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: theme.color.textSecondary.dark,
-    textAlign: "center",
-    lineHeight: 22,
-    marginBottom: 32,
-    paddingHorizontal: 20,
-  },
-  button: {
-    backgroundColor: theme.color.reactBlue.light,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 25,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: theme.color.reactBlue.light,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  buttonIcon: {
-    marginRight: 8,
-  },
-  buttonText: {
-    color: theme.colorBlack,
-    fontSize: 16,
-    fontWeight: "600",
-  },
-});

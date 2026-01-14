@@ -161,9 +161,29 @@ export const getRelationshipData = query({
         q.eq("followerId", args.targetId).eq("followingId", me._id),
       )
       .first();
+
+    const pendingReq = await ctx.db
+      .query("followRequests")
+      .withIndex("by_follower_and_following", (q) =>
+        q.eq("followerId", me._id).eq("followingId", args.targetId),
+      )
+      .first();
+    const incomingReq = await ctx.db
+      .query("followRequests")
+      .withIndex("by_follower_and_following", (q) =>
+        q.eq("followerId", args.targetId).eq("followingId", me._id),
+      )
+      .first();
+
     const followStatus = following ? "following" : "not_following";
     const mutualFollow = Boolean(following && followedBy);
-    return { followStatus, mutualFollow } as const;
+    return { 
+        followStatus, 
+        mutualFollow,
+        hasPendingRequest: !!pendingReq,
+        hasIncomingRequest: !!incomingReq,
+        isFollowingMe: !!followedBy,
+    } as const;
   },
 });
 
@@ -206,6 +226,11 @@ export const toggleFollow = mutation({
             followingId: args.targetUserId,
             status: "pending",
             createdAt: Date.now(),
+          });
+          await ctx.db.insert("notifications", {
+            receiverId: args.targetUserId,
+            senderId: currentUser._id,
+            type: "follow_request",
           });
         }
         return {

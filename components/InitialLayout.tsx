@@ -1,5 +1,5 @@
 import { useAuth } from "@clerk/clerk-expo";
-import { useRouter, useSegments, Slot } from "expo-router";
+import { useRouter, useSegments, Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import { useUserSync } from "@/hooks/useUserSync";
 import { View, Text, useColorScheme } from "react-native";
@@ -76,7 +76,23 @@ export default function InitialLayout() {
         paddingBottom: 0,
       }}
     >
-      <Slot />
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: dynamicBackgroundColor } }}>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
+        <Stack.Screen name="sso-callback" options={{ headerShown: false }} />
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="story/[id]" options={{ presentation: "modal" }} />
+        <Stack.Screen name="story/edit" options={{ presentation: "modal" }} />
+        <Stack.Screen
+          name="profile/[userId]"
+          options={{
+            headerShown: true,
+            title: "Profile",
+            headerStyle: { backgroundColor: dynamicBackgroundColor },
+            headerTintColor: dynamicTextColor,
+          }}
+        />
+      </Stack>
     </View>
   );
 }

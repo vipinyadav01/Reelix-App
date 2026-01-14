@@ -22,6 +22,7 @@ interface UseProfileScreenReturn {
   followStatus: string | null;
   isOwnProfile: boolean;
   handleFollowToggle: () => Promise<void>;
+  handleRespondToRequest: (approve: boolean) => Promise<void>;
   handleRefresh: () => Promise<void>;
   handleEditProfile: () => void;
   handleMessage: () => void;
@@ -158,6 +159,23 @@ export function useProfileScreen(
     router.push(`/chat/${targetUser._id}` as any);
   }, [targetUser, router]);
 
+  const handleRespondToRequest = useCallback(async (approve: boolean) => {
+    if (!targetUser) return;
+    try {
+      setIsLoading(true);
+      await respondToFollowRequest({
+        followerId: targetUser._id as Id<"users">,
+        approve,
+      });
+      // Convex updates automatically
+    } catch (err) {
+      console.error("Error responding to request:", err);
+      Alert.alert("Error", "Failed to update request status.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [targetUser, respondToFollowRequest]);
+
   return {
     profileData,
     isLoading,
@@ -165,6 +183,7 @@ export function useProfileScreen(
     followStatus: relationshipData?.followStatus || null,
     isOwnProfile,
     handleFollowToggle,
+    handleRespondToRequest,
     handleRefresh,
     handleEditProfile,
     handleMessage,

@@ -1,10 +1,10 @@
-import { View, Text, Image, TouchableOpacity, Alert } from "react-native";
+import { View, Text, Image, TouchableOpacity, Alert, Dimensions } from "react-native";
 import React, { useState, useEffect } from "react";
-import { styles } from "@/styles/auth.styles";
 import { Ionicons } from "@expo/vector-icons";
-import { COLORS } from "@/constants/theme";
 import { useSSO, useAuth } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
+
+const { width, height } = Dimensions.get("window");
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
@@ -78,14 +78,19 @@ export default function Login() {
       // Small delay to ensure state is updated
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      // Navigation will be handled by the auth state change
-      // Don't force navigation here to avoid conflicts
     } catch (error: any) {
+      // Check if user is already signed in
+      const errorMessage = error.message || "";
+      if (errorMessage.toLowerCase().includes("already signed in") || errorMessage.toLowerCase().includes("current session")) {
+        router.replace("/(tabs)");
+        return;
+      }
+
       console.error("Login error:", error);
-      setError(error.message || "Authentication failed. Please try again.");
+      setError(errorMessage || "Authentication failed. Please try again.");
       Alert.alert(
         "Login Failed",
-        error.message || "Authentication failed. Please try again.",
+        errorMessage || "Authentication failed. Please try again.",
         [{ text: "OK" }],
       );
     } finally {
@@ -93,50 +98,50 @@ export default function Login() {
     }
   };
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-black">
       {/* Brand Section  */}
-      <View style={styles.brandSection}>
-        <View style={styles.logoContainer}>
+      <View className="items-center mt-[15%]">
+        <View className="w-24 h-24 rounded-3xl items-center justify-center mb-6">
           <Image
             source={require("../../assets/images/icon.png")}
-            style={styles.logoImage}
+            className="w-[72px] h-[72px]"
           />
         </View>
-        <Text style={styles.appName}>reelix</Text>
-        <Text style={styles.tagline}>Don&apos;t miss anything</Text>
+        <Text className="text-5xl font-bold font-serif italic text-white tracking-wide mb-2">Reelix</Text>
+        <Text className="text-sm text-neutral-500 tracking-[2px] uppercase">Share Your Moments</Text>
       </View>
 
       {/*  Auth Image */}
-      <View style={styles.illustrationContainer}>
+      <View className="flex-1 justify-center items-center px-8">
         <Image
           source={require("../../assets/images/auth-bg.png")}
-          style={styles.illustration}
+          style={{ width: width * 0.7, height: width * 0.7, maxHeight: 260 }}
           resizeMode="cover"
         />
       </View>
       {/*  Auth Form */}
-      <View style={styles.loginSection}>
+      <View className="w-full px-6 pb-12 items-center">
         <TouchableOpacity
-          style={[styles.googleButton, isLoading && { opacity: 0.7 }]}
+          className={`flex-row items-center justify-center bg-white py-4 px-6 rounded-xl w-full max-w-[320px] mb-4 ${isLoading ? "opacity-70" : ""}`}
           onPress={handleGoogleSignIn}
-          activeOpacity={0.7}
+          activeOpacity={0.8}
           disabled={isLoading}
         >
-          <View style={styles.googleIconContainer}>
-            <Ionicons name="logo-google" size={20} color={COLORS.surface} />
+          <View className="w-6 h-6 justify-center items-center mr-3">
+            <Ionicons name="logo-google" size={22} color="#000" />
           </View>
-          <Text style={styles.googleButtonText}>
+          <Text className="text-base font-bold text-black">
             {isLoading ? "Signing in..." : "Continue with Google"}
           </Text>
         </TouchableOpacity>
         {error && (
           <Text
-            style={[styles.termsText, { color: COLORS.error, marginTop: 10 }]}
+            className="text-center text-xs text-red-500 max-w-[280px] mt-2 mb-3"
           >
             {error}
           </Text>
         )}
-        <Text style={styles.termsText}>
+        <Text className="text-center text-xs text-neutral-600 max-w-[300px]">
           By continuing, you agree to our Terms and Privacy Policy
         </Text>
       </View>

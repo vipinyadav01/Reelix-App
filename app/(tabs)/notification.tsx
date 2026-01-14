@@ -1,4 +1,3 @@
-import React, { useState, useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,15 +7,19 @@ import {
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useNotificationsSimple as useNotifications } from "@/hooks/useNotificationsSimple";
+import { api } from "@/convex/_generated/api";
+import { useQuery, useMutation } from "convex/react";
+import { Id } from "@/convex/_generated/dataModel";
 import { theme } from "@/constants/theme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { styles } from "@/styles/notification.styles";
+import { ScreenHeader } from "@/components/ScreenHeader";
+import { useState, useMemo, useCallback } from "react";
 
 interface NotificationGroup {
   title: string;
   notifications: {
     id: string;
+    senderId: string;
     title: string;
     body: string;
     type: string;
@@ -26,18 +29,49 @@ interface NotificationGroup {
 }
 
 export default function NotificationScreen() {
-  const {
-    notifications = [],
-    unreadCount = 0,
-    markAsRead,
-    markAllAsRead,
-    clearNotifications,
-  } = useNotifications() || {};
+  const convexNotifications = useQuery(api.notifications.getNotifications);
+  const respondToFollowRequest = useMutation(api.user.respondToFollowRequest);
+
+  const notifications = useMemo(() => {
+    if (!convexNotifications) return [];
+    return convexNotifications.map((n) => ({
+       id: n._id,
+       senderId: n.sender._id,
+       title: n.sender.username,
+       body: n.type === "like" ? "Liked your post" : 
+             n.type === "comment" ? `Commented: ${n.comment}` : 
+             n.type === "follow" ? "Started following you" : 
+             n.type === "follow_request" ? "Requested to follow you" :
+             n.type === "system" ? "Account update" :
+             "New interaction",
+       type: n.type,
+       read: false, 
+       timestamp: n._creationTime,
+    }));
+  }, [convexNotifications]);
+
+  const handleRespond = async (senderId: string, approve: boolean) => {
+    try {
+      await respondToFollowRequest({ followerId: senderId as Id<"users">, approve });
+      // Helper to remove item locally if needed or rely on Convex
+    } catch (err) {
+      console.error("Failed to respond", err);
+    }
+  };
+
+  const unreadCount = notifications.length;
 
   const [showDropdown, setShowDropdown] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<"all" | "unread">("all");
   const insets = useSafeAreaInsets();
+
+  const markAsRead = (id: string) => {
+      console.log("Mark as read", id);
+  };
+  
+  const markAllAsRead = () => {};
+  const clearNotifications = () => {};
 
   const formatTimestamp = (timestamp: number): string => {
     const now = Date.now();
@@ -80,6 +114,8 @@ export default function NotificationScreen() {
         return { icon: "💬", color: "#3b82f6" };
       case "follow":
         return { icon: "👤", color: "#8b5cf6" };
+      case "follow_request":
+        return { icon: "👋", color: "#f59e0b" };
       case "mention":
         return { icon: "@", color: "#f59e0b" };
       case "message":
@@ -195,10 +231,7 @@ export default function NotificationScreen() {
       return (
         <TouchableOpacity
           key={`${notification.id}-${index}`}
-          style={[
-            styles.notificationItem,
-            !notification.read && styles.unreadNotification,
-          ]}
+          className={`py-4 px-5 border-b border-white/5 ${!notification.read ? "bg-green-500/10 border-l-[3px] border-l-blue-500 pl-[17px]" : ""}`}
           onPress={() => markAsRead?.(notification.id)}
           accessibilityLabel={`${notification.title || "Notification"}. ${
             notification.body || ""
@@ -210,36 +243,48 @@ export default function NotificationScreen() {
             notification.read ? "Already read" : "Tap to mark as read"
           }
         >
-          <View style={styles.notificationContent}>
+          <View className="flex-row items-start">
             <View
-              style={[
-                styles.avatarContainer,
-                !notification.read && styles.avatarContainerUnread,
-              ]}
+              className={`w-12 h-12 rounded-full bg-white/10 items-center justify-center mr-3 mt-0.5 ${!notification.read ? "bg-green-500/15 border-2 border-green-500/30" : ""}`}
             >
-              <Text style={styles.avatarIcon}>{typeInfo.icon}</Text>
+              <Text className="text-xl">{typeInfo.icon}</Text>
             </View>
-            <View style={styles.textContent}>
-              <View style={styles.titleRow}>
+            <View className="flex-1">
+              <View className="flex-row items-start justify-between mb-1">
                 <Text
-                  style={[
-                    styles.notificationTitle,
-                    !notification.read && styles.unreadText,
-                  ]}
+                  className={`flex-1 text-base font-semibold text-white/90 leading-snug ${!notification.read ? "text-white font-bold" : ""}`}
                   numberOfLines={2}
                 >
                   {notification.title || "Untitled Notification"}
                 </Text>
-                {!notification.read && <View style={styles.unreadDotTitle} />}
+                {!notification.read && <View className="w-2 h-2 rounded-full bg-blue-500 ml-2 mt-2" />}
               </View>
-              <Text style={styles.notificationBody} numberOfLines={3}>
+              <Text className="text-sm text-white/60 leading-5 mb-2" numberOfLines={3}>
                 {notification.body || "No description available"}
               </Text>
-              <View style={styles.notificationFooter}>
-                <Text style={styles.timestamp}>
+              
+              {notification.type === "follow_request" && (
+                  <View className="flex-row gap-2 mt-1 mb-2">
+                     <TouchableOpacity 
+                        className="bg-blue-500 px-4 py-1.5 rounded-lg"
+                        onPress={() => handleRespond(notification.senderId, true)}
+                     >
+                       <Text className="text-white font-semibold text-xs">Confirm</Text>
+                     </TouchableOpacity>
+                     <TouchableOpacity 
+                        className="bg-neutral-800 px-4 py-1.5 rounded-lg border border-neutral-700"
+                        onPress={() => handleRespond(notification.senderId, false)}
+                     >
+                       <Text className="text-white font-semibold text-xs">Delete</Text>
+                     </TouchableOpacity>
+                  </View>
+              )}
+
+              <View className="flex-row items-center justify-between mt-1">
+                <Text className="text-xs text-white/40 font-medium">
                   {formatTimestamp(notification.timestamp || Date.now())}
                 </Text>
-                <Text style={styles.typeLabel}>
+                <Text className="text-[10px] text-white/30 uppercase font-semibold tracking-wider">
                   {notification.type || "system"}
                 </Text>
               </View>
@@ -252,59 +297,53 @@ export default function NotificationScreen() {
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.title}>Notifications</Text>
-          {unreadCount > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>
-                {unreadCount > 99 ? "99+" : unreadCount}
-              </Text>
-            </View>
-          )}
-        </View>
-        <TouchableOpacity
-          style={styles.menuButton}
-          onPress={toggleDropdown}
-          accessibilityLabel="Notification menu"
-          accessibilityHint="Opens menu with notification options"
-        >
-          <Ionicons
-            name="ellipsis-vertical"
-            size={24}
-            color={theme.colorWhite}
-          />
-        </TouchableOpacity>
-      </View>
+    <View className="flex-1 bg-black">
+      <ScreenHeader
+        title={
+          <View className="flex-row items-center gap-3">
+            <Text className="text-xl font-bold text-white font-serif italic">Notifications</Text>
+            {unreadCount > 0 && (
+              <View className="bg-red-500 rounded-xl px-2 py-0.5 min-w-[24px] items-center justify-center">
+                <Text className="text-white text-xs font-bold">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </Text>
+              </View>
+            )}
+          </View>
+        }
+        rightElement={
+          <TouchableOpacity
+            className="p-2 rounded-full active:bg-white/10"
+            onPress={toggleDropdown}
+            accessibilityLabel="Notification menu"
+          >
+            <Ionicons
+              name="ellipsis-vertical"
+              size={24}
+              color={theme.colorWhite}
+            />
+          </TouchableOpacity>
+        }
+      />
 
       {/* Filter Tabs */}
-      <View style={styles.filterContainer}>
+      <View className="flex-row px-5 py-3 gap-3 border-b border-white/5">
         <TouchableOpacity
-          style={[styles.filterTab, filter === "all" && styles.filterTabActive]}
+          className={`px-4 py-2 rounded-xl bg-white/5 ${filter === "all" ? "bg-blue-500" : ""}`}
           onPress={() => setFilter("all")}
         >
           <Text
-            style={[
-              styles.filterText,
-              filter === "all" && styles.filterTextActive,
-            ]}
+            className={`text-sm font-semibold ${filter === "all" ? "text-white" : "text-white/60"}`}
           >
             All ({notifications.length})
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[
-            styles.filterTab,
-            filter === "unread" && styles.filterTabActive,
-          ]}
+          className={`px-4 py-2 rounded-xl bg-white/5 ${filter === "unread" ? "bg-blue-500" : ""}`}
           onPress={() => setFilter("unread")}
         >
           <Text
-            style={[
-              styles.filterText,
-              filter === "unread" && styles.filterTextActive,
-            ]}
+            className={`text-sm font-semibold ${filter === "unread" ? "text-white" : "text-white/60"}`}
           >
             Unread ({unreadCount})
           </Text>
@@ -313,18 +352,15 @@ export default function NotificationScreen() {
 
       {/* Dropdown */}
       {showDropdown && (
-        <View style={styles.dropdownOverlay}>
+        <View className="absolute inset-0 z-50 justify-start items-end pt-32 pr-5">
           <TouchableOpacity
-            style={styles.overlayBackground}
+            className="absolute inset-0 bg-black/50"
             activeOpacity={1}
             onPress={toggleDropdown}
           />
-          <View style={styles.dropdown}>
+          <View className="bg-neutral-900 rounded-xl py-2 min-w-[220px] shadow-lg shadow-black border border-white/10">
             <TouchableOpacity
-              style={[
-                styles.dropdownItem,
-                unreadCount === 0 && styles.disabledItem,
-              ]}
+              className={`flex-row items-center px-4 py-3 gap-3 ${unreadCount === 0 ? "opacity-40" : ""}`}
               onPress={handleMarkAllAsRead}
               disabled={unreadCount === 0}
             >
@@ -338,20 +374,14 @@ export default function NotificationScreen() {
                 }
               />
               <Text
-                style={[
-                  styles.dropdownText,
-                  unreadCount === 0 && styles.disabledText,
-                ]}
+                className={`text-[15px] font-medium ${unreadCount === 0 ? "text-white/30" : "text-white"}`}
               >
                 Mark All as Read
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                styles.dropdownItem,
-                notifications.length === 0 && styles.disabledItem,
-              ]}
+              className={`flex-row items-center px-4 py-3 gap-3 ${notifications.length === 0 ? "opacity-40" : ""}`}
               onPress={handleClearAll}
               disabled={notifications.length === 0}
             >
@@ -365,26 +395,20 @@ export default function NotificationScreen() {
                 }
               />
               <Text
-                style={[
-                  styles.dropdownText,
-                  notifications.length === 0 && styles.disabledText,
-                ]}
+                className={`text-[15px] font-medium ${notifications.length === 0 ? "text-white/30" : "text-white"}`}
               >
                 Clear All
               </Text>
             </TouchableOpacity>
 
-            <View style={styles.dropdownDivider} />
+            <View className="h-[1px] bg-white/10 my-2" />
           </View>
         </View>
       )}
 
       <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={[
-          styles.scrollViewContent,
-          { paddingBottom: 120 + insets.bottom },
-        ]}
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 120 + insets.bottom }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -395,7 +419,7 @@ export default function NotificationScreen() {
         }
       >
         {totalCount === 0 ? (
-          <View style={styles.emptyState}>
+          <View className="flex-1 justify-center items-center pt-32 px-10">
             <Ionicons
               name={
                 filter === "unread"
@@ -405,12 +429,12 @@ export default function NotificationScreen() {
               size={64}
               color={theme.color.textSecondary.dark}
             />
-            <Text style={styles.emptyText}>
+            <Text className="text-xl font-semibold text-white mt-5 mb-2">
               {filter === "unread"
                 ? "You're all caught up!"
                 : "No notifications yet"}
             </Text>
-            <Text style={styles.emptySubtext}>
+            <Text className="text-sm text-white/50 text-center leading-5">
               {filter === "unread"
                 ? "Check back later for new notifications"
                 : "Check back later for new notifications"}
@@ -418,8 +442,8 @@ export default function NotificationScreen() {
           </View>
         ) : (
           groupedNotifications.map((group, groupIndex) => (
-            <View key={`group-${groupIndex}`} style={styles.groupContainer}>
-              <Text style={styles.groupTitle}>{group.title}</Text>
+            <View key={`group-${groupIndex}`} className="mt-5">
+              <Text className="text-[13px] font-bold text-white/50 uppercase tracking-widest px-5 mb-3">{group.title}</Text>
               {group.notifications.map((notification, i) =>
                 renderNotificationItem(notification, i),
               )}

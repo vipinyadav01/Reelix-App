@@ -1,4 +1,6 @@
-import { Loader } from "@/components/Loader";
+import { useRouter } from "expo-router";
+import { ScreenHeader } from "@/components/ScreenHeader";
+import { FeedSkeleton } from "@/components/SkeletonLoaders";
 import Post from "@/components/Post";
 import StoriesSection from "@/components/Stories";
 import EmptyState from "@/components/EmptyState";
@@ -7,21 +9,27 @@ import { api } from "@/convex/_generated/api";
 import { useAuth } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "convex/react";
+import { FlashList } from "@shopify/flash-list";
 import {
-  FlatList,
   RefreshControl,
   Text,
   TouchableOpacity,
   View,
   StatusBar,
   Alert,
+  Dimensions,
+  Platform,
 } from "react-native";
-import { styles } from "../../styles/feed.styles";
+
 import { useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+const TAB_BAR_HEIGHT = 85;
+
 export default function Index() {
   const { signOut } = useAuth();
+  const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
   const posts = useQuery(api.posts.getFeedPosts);
   const insets = useSafeAreaInsets();
@@ -38,25 +46,24 @@ export default function Index() {
     setTimeout(() => setRefreshing(false), 1500);
   };
 
+  const navigateToNotifications = () => {
+    router.push("/(tabs)/notification");
+  };
+
   if (posts === undefined) {
-    return (
-      <View style={styles.container}>
-        <Header onSignOut={handleSignOut} paddingTop={insets.top} />
-        <Loader />
-      </View>
-    );
+    return <FeedSkeleton />;
   }
 
-  const safePosts = posts?.filter(Boolean) ?? [];
+  const safePosts = (posts ?? []).filter((p): p is NonNullable<typeof p> => p !== null);
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-black">
       <StatusBar
         barStyle="light-content"
         backgroundColor={theme.color?.background?.dark || "#000"}
       />
 
-      <Header onSignOut={handleSignOut} paddingTop={insets.top} />
+      <Header onNotification={navigateToNotifications} />
 
       {safePosts.length === 0 ? (
         <EmptyState
@@ -68,17 +75,17 @@ export default function Index() {
           onButtonPress={() => {}}
         />
       ) : (
-        <FlatList
+        <FlashList<any>
           data={safePosts}
           renderItem={({ item }) => <Post post={item} />}
           keyExtractor={(item, index) =>
-            typeof item._id === "string" ? item._id : String(index)
+            item?._id ? item._id : String(index)
           }
+          estimatedItemSize={600}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={[
-            styles.feedContainer,
-            { paddingBottom: 80 + insets.bottom },
-          ]}
+          contentContainerStyle={{
+             paddingBottom: insets.bottom + 80,
+          }}
           ListHeaderComponent={<StoriesSection />}
           refreshControl={
             <RefreshControl
@@ -91,50 +98,32 @@ export default function Index() {
               }
             />
           }
-          ItemSeparatorComponent={() => <View style={styles.postSeparator} />}
+          ItemSeparatorComponent={() => <View className="h-4" />}
         />
       )}
     </View>
   );
 }
-
-/** 🔹 Reusable Header Component */
-const Header = ({ onSignOut, paddingTop }: { onSignOut: () => void; paddingTop: number }) => (
-  <View style={[styles.header, { paddingTop: paddingTop - 40 }]}> 
-    <View style={styles.headerContent}>
-      <View style={styles.headerLeft}>
-        <Text style={styles.headerTitle}>Reelix</Text>
-      </View>
-      <View style={styles.headerRight}>
+const Header = ({ onNotification }: { onNotification: () => void }) => (
+  <ScreenHeader
+    title={<Text className="text-3xl font-bold font-serif italic text-white text-shadow">Reelix</Text>}
+    rightElement={
+      <View className="flex-row gap-4">
         <TouchableOpacity
-          style={styles.headerButton}
           activeOpacity={0.7}
           onPress={() => Alert.alert("Search", "Search is coming soon")}
-          accessibilityLabel="Search"
-          accessibilityHint="Opens search"
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Ionicons
-            name="search-outline"
-            size={24}
-            color={theme.colorWhite || "#fff"}
-          />
+          <Ionicons name="search-outline" size={24} color="#fff" />
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.headerButton}
           activeOpacity={0.7}
-          onPress={onSignOut}
-          accessibilityLabel="Sign out"
-          accessibilityHint="Signs you out of the app"
+          onPress={onNotification}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Ionicons
-            name="log-out-outline"
-            size={24}
-            color={theme.colorWhite || "#fff"}
-          />
+          <Ionicons name="heart-outline" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
-    </View>
-  </View>
+    }
+  />
 );

@@ -1,4 +1,4 @@
-import { styles } from "@/styles/feed.styles";
+
 import { ScrollView } from "react-native";
 import Story from "./Story";
 import { useAddStory } from "@/hooks/useAddStory";
@@ -44,7 +44,7 @@ const StoriesSection = () => {
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      style={styles.storiesContainer}
+      className="py-2.5 pl-3 border-b border-neutral-800 mb-2"
     >
       {data.map((story: any) => (
         <Story key={story.id} story={story} />

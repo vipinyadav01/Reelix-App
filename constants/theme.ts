@@ -11,9 +11,9 @@ const fontScale = (size: number) =>
   isIpad ? Math.round(size * FONT_SCALE) : size;
 
 export const theme = {
-  primary: "#6becbfff",
-  secondary: "#6becbfff",
-  accent: "#29f10aff",
+  primary: "#FFFFFF",
+  secondary: "#FFFFFF",
+  accent: "#FFFFFF",
   background: "#000000",
   surface: "#1C1C1E",
   surfaceLight: "#2C2C2E",
@@ -29,7 +29,7 @@ export const theme = {
   grayDark: "#48484A",
   success: "#32D74B",
   warning: "#FF9500",
-  error: "#6becbfff",
+  error: "#FF3B30",
   info: "#5AC8FA",
 
   colorRed: "#FF453A",
@@ -41,8 +41,8 @@ export const theme = {
 
   color: {
     reactBlue: {
-      light: "#6becbfff",
-      dark: "#6becbfff",
+      light: "#FFFFFF",
+      dark: "#FFFFFF",
     },
     transparent: {
       light: "rgba(255,255,255,0)",

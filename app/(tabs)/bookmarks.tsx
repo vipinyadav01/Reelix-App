@@ -1,43 +1,49 @@
-import { Loader } from "@/components/Loader";
 import EmptyState from "@/components/EmptyState";
 import { theme } from "@/constants/theme";
 import { api } from "@/convex/_generated/api";
-import { styles } from "@/styles/feed.styles";
 import { useQuery } from "convex/react";
-import { Image } from "expo-image";
-import { View, Text, ScrollView, StatusBar } from "react-native";
+import { View, ScrollView, StatusBar, Image, Dimensions, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+
+import { ScreenHeader } from "@/components/ScreenHeader";
+import { BookmarksSkeleton } from "@/components/SkeletonLoaders";
+
+const { width } = Dimensions.get("window");
+const ITEM_SIZE = width / 3;
 
 export default function Bookmarks() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const bookmarkedPosts = useQuery(api.bookmarks.getBookmarkedPosts);
 
-  // ✅ Properly handle undefined and empty cases
-  if (bookmarkedPosts === undefined) return <Loader />;
-  const safeBookmarks = bookmarkedPosts.filter((p) => p != null);
+  if (bookmarkedPosts === undefined) return <BookmarksSkeleton />;
+  
+  const safeBookmarks = bookmarkedPosts.filter((p): p is NonNullable<typeof bookmarkedPosts[number]> => p !== null && !!p.imageUrl);
+
   if (safeBookmarks.length === 0) return <NoBookmarksFound />;
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-black">
       <StatusBar
         barStyle="light-content"
-        backgroundColor={theme.color.background.dark}
+        backgroundColor={theme.color?.background?.dark || "#000"}
       />
 
-      {/* ENHANCED HEADER */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Bookmarks</Text>
-        <View style={styles.headerRight}>
-          <Ionicons name="bookmark" size={24} color={theme.colorWhite} />
-        </View>
-      </View>
+      <ScreenHeader
+        title="Bookmarks"
+        rightElement={
+          <View className="flex-row items-center">
+            <Ionicons name="bookmark" size={24} color={theme.colorWhite || "#fff"} />
+          </View>
+        }
+      />
 
       {/* ENHANCED POSTS GRID */}
-      <View style={{ flex: 1 }}>
+      <View className="flex-1">
         <ScrollView
           contentContainerStyle={{
-            padding: 8,
             paddingBottom: 120 + insets.bottom,
             flexDirection: "row",
             flexWrap: "wrap",
@@ -45,30 +51,24 @@ export default function Bookmarks() {
           showsVerticalScrollIndicator={false}
         >
           {safeBookmarks.map((post) => (
-            <View
+            <TouchableOpacity
               key={post._id}
               style={{
-                width: "33.33%",
-                padding: 2,
+                width: ITEM_SIZE,
+                height: ITEM_SIZE,
+                padding: 1, // 1px gap
               }}
+              activeOpacity={0.8}
+              onPress={() => router.push(`/post/${post._id}` as any)}
             >
-              <View style={styles.bookmarkImageContainer}>
+              <View className="w-full h-full bg-neutral-900 overflow-hidden">
                 <Image
                   source={{ uri: post.imageUrl }}
-                  style={styles.bookmarkImage}
-                  contentFit="cover"
-                  transition={300}
-                  cachePolicy="memory-disk"
+                  className="w-full h-full"
+                  resizeMode="cover"
                 />
-                <View style={styles.bookmarkOverlay}>
-                  <Ionicons
-                    name="bookmark"
-                    size={16}
-                    color={theme.colorWhite}
-                  />
-                </View>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
         </ScrollView>
       </View>
@@ -78,18 +78,20 @@ export default function Bookmarks() {
 
 function NoBookmarksFound() {
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-black">
       <StatusBar
         barStyle="light-content"
-        backgroundColor={theme.color.background.dark}
+        backgroundColor={theme.color?.background?.dark || "#000"}
       />
 
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Bookmarks</Text>
-        <View style={styles.headerRight}>
-          <Ionicons name="bookmark" size={24} color={theme.colorWhite} />
-        </View>
-      </View>
+      <ScreenHeader
+        title="Bookmarks"
+        rightElement={
+          <View className="flex-row items-center">
+            <Ionicons name="bookmark" size={24} color={theme.colorWhite || "#fff"} />
+          </View>
+        }
+      />
 
       <EmptyState
         icon="bookmark-outline"

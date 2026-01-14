@@ -1,16 +1,17 @@
 import { Loader } from "@/components/Loader";
+import { ScreenHeader } from "@/components/ScreenHeader";
 import { theme } from "@/constants/theme";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
-import { styles } from "@/styles/profile.styles";
-import { useAuth } from "@clerk/clerk-expo";
+import { useAuth, useUser } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
-import { Image } from "expo-image";
+
 import { useState } from "react";
 import {
   View,
   Text,
+  Image,
   TouchableOpacity,
   ScrollView,
   Modal,
@@ -19,11 +20,15 @@ import {
   KeyboardAvoidingView,
   Platform,
   TextInput,
+  Dimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+const { width } = Dimensions.get("window");
+
 export default function Profile() {
   const { signOut, userId } = useAuth();
+  const { user } = useUser();
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const insets = useSafeAreaInsets();
   const currentUser = useQuery(
@@ -49,111 +54,128 @@ export default function Profile() {
   if (!currentUser || posts === undefined) return <Loader />;
 
   return (
-    <View style={styles.container}>
-      {/* HEADER */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.username}>{currentUser.username}</Text>
-        </View>
-        <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.headerIcon} onPress={() => signOut()}>
+    <View className="flex-1 bg-black">
+      <ScreenHeader
+        title={currentUser.username}
+        showBackButton={false}
+        rightElement={
+          <TouchableOpacity className="p-2" onPress={() => signOut()}>
             <Ionicons
               name="log-out-outline"
               size={24}
               color={theme.colorWhite}
             />
           </TouchableOpacity>
-        </View>
-      </View>
+        }
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 120 + insets.bottom }}
       >
-        <View style={styles.profileInfo}>
-          {/* AVATAR & STATS */}
-          <View style={styles.avatarAndStats}>
-            <View style={styles.avatarContainer}>
+        <View className="px-4 pt-4 pb-2">
+          {/* TOP ROW: AVATAR & STATS */}
+          <View className="flex-row items-center justify-between mb-3">
+            <View className="mr-4">
               <Image
-                source={{ uri: currentUser.image }}
-                style={styles.avatar}
-                contentFit="cover"
-                transition={200}
+                source={{ 
+                  uri: user?.imageUrl 
+                    ? user.imageUrl 
+                    : (currentUser.image && currentUser.image.trim() !== "" 
+                      ? currentUser.image 
+                      : `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.username || "User")}&background=random`)
+                }}
+                className="w-[86px] h-[86px] rounded-full border border-neutral-800 bg-neutral-900"
+                resizeMode="cover"
               />
             </View>
 
-            <View style={styles.statsContainer}>
-              <View style={styles.statItem}>
-                <Text style={styles.statNumber}>{posts.length}</Text>
-                <Text style={styles.statLabel}>Posts</Text>
+            <View className="flex-1 flex-row justify-around items-center ml-2">
+              <View className="items-center">
+                <Text className="text-white text-[17px] font-bold leading-5">{posts.length}</Text>
+                <Text className="text-white text-[13px] leading-5">posts</Text>
               </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statNumber}>
+              <View className="items-center">
+                <Text className="text-white text-[17px] font-bold leading-5">
                   {currentUser.followers || 0}
                 </Text>
-                <Text style={styles.statLabel}>Followers</Text>
+                <Text className="text-white text-[13px] leading-5">followers</Text>
               </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statNumber}>
+              <View className="items-center">
+                <Text className="text-white text-[17px] font-bold leading-5">
                   {currentUser.following || 0}
                 </Text>
-                <Text style={styles.statLabel}>Following</Text>
+                <Text className="text-white text-[13px] leading-5">following</Text>
               </View>
             </View>
           </View>
 
-          {/* USER INFO */}
-          <View style={styles.userInfo}>
-            <Text style={styles.name}>{currentUser.fullname}</Text>
-            <Text style={styles.username}>@{currentUser.username}</Text>
+          {/* BIO SECTION */}
+          <View className="mb-4">
+            <Text className="text-white font-bold text-[13px] mb-0.5 pointer-events-none">
+              {currentUser.fullname || currentUser.username}
+            </Text>
             {currentUser.bio && (
-              <Text style={styles.bio}>{currentUser.bio}</Text>
+              <Text className="text-white text-[13px] leading-[18px]">
+                {currentUser.bio}
+              </Text>
             )}
           </View>
 
           {/* ACTION BUTTONS */}
-          <View style={styles.actionButtons}>
+          <View className="flex-row gap-2 mb-2">
             <TouchableOpacity
-              style={styles.editButton}
+              className="flex-1 bg-[#363636] h-[32px] rounded-lg items-center justify-center active:opacity-70"
               onPress={() => setIsEditModalVisible(true)}
             >
-              <Text style={styles.editButtonText}>Edit Profile</Text>
+              <Text className="text-white text-[13px] font-semibold">Edit profile</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.shareButton}>
-              <Ionicons
-                name="share-outline"
-                size={20}
-                color={theme.colorWhite}
-              />
+            
+            <TouchableOpacity 
+              className="flex-1 bg-[#363636] h-[32px] rounded-lg items-center justify-center active:opacity-70"
+            >
+              <Text className="text-white text-[13px] font-semibold">Share profile</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* POSTS SECTION */}
-        <View style={styles.postsSection}>
-          <View style={styles.postsHeader}>
-            <Text style={styles.postsTitle}>Posts</Text>
-          </View>
+        {/* TABS (Grid / Reels / Tags) */}
+        <View className="flex-row border-t border-neutral-800 mt-2">
+          <TouchableOpacity className="flex-1 items-center justify-center h-[44px] border-b border-white">
+            <Ionicons name="grid" size={22} color="white" />
+          </TouchableOpacity>
+          <TouchableOpacity className="flex-1 items-center justify-center h-[44px]">
+            <Ionicons name="videocam-outline" size={26} color="#737373" />
+          </TouchableOpacity>
+          <TouchableOpacity className="flex-1 items-center justify-center h-[44px]">
+            <Ionicons name="person-outline" size={24} color="#737373" />
+          </TouchableOpacity>
+        </View>
 
+        {/* POSTS GRID */}
+        <View className="flex-row flex-wrap" style={{ gap: 1 }}>
           {posts.length === 0 ? (
-            <NoPostsFound />
+             <View className="w-full pt-12">
+               <NoPostsFound />
+             </View>
           ) : (
-            <View style={styles.postsGrid}>
-              {posts.map((post, index) => (
-                <TouchableOpacity
-                  key={post._id}
-                  style={styles.gridItem}
-                  onPress={() => setSelectedPost(post)}
-                >
-                  <Image
-                    source={{ uri: post.imageUrl }}
-                    style={styles.gridImage}
-                    contentFit="cover"
-                    transition={200}
-                  />
-                </TouchableOpacity>
-              ))}
-            </View>
+            posts.map((post) => (
+              <TouchableOpacity
+                key={post._id}
+                style={{
+                  width: (width - 2) / 3, // (Screen - 2 gaps) / 3 columns
+                  height: (width - 2) / 3,
+                }}
+                activeOpacity={0.8}
+                onPress={() => setSelectedPost(post)}
+              >
+                <Image
+                  source={{ uri: post.imageUrl }}
+                  className="w-full h-full bg-neutral-900"
+                  resizeMode="cover"
+                />
+              </TouchableOpacity>
+            ))
           )}
         </View>
       </ScrollView>
@@ -168,20 +190,20 @@ export default function Profile() {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={styles.modalContainer}
+            className="flex-1 bg-black/50 justify-end"
           >
-            <View style={styles.modalContent}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Edit Profile</Text>
+            <View className="bg-neutral-900 rounded-t-3xl p-5 pb-10">
+              <View className="flex-row justify-between items-center mb-5">
+                <Text className="text-white text-xl font-semibold">Edit Profile</Text>
                 <TouchableOpacity onPress={() => setIsEditModalVisible(false)}>
                   <Ionicons name="close" size={24} color={theme.colorWhite} />
                 </TouchableOpacity>
               </View>
 
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Name</Text>
+              <View className="mb-4">
+                <Text className="text-white text-base mb-2">Name</Text>
                 <TextInput
-                  style={styles.input}
+                  className="bg-black rounded-lg p-3 text-white text-base border border-neutral-700"
                   value={editedProfile.fullname}
                   onChangeText={(text) =>
                     setEditedProfile((prev) => ({ ...prev, fullname: text }))
@@ -190,10 +212,10 @@ export default function Profile() {
                 />
               </View>
 
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Bio</Text>
+              <View className="mb-4">
+                <Text className="text-white text-base mb-2">Bio</Text>
                 <TextInput
-                  style={[styles.input, styles.bioInput]}
+                  className="bg-black rounded-lg p-3 text-white text-base border border-neutral-700 h-20"
                   value={editedProfile.bio}
                   onChangeText={(text) =>
                     setEditedProfile((prev) => ({ ...prev, bio: text }))
@@ -201,14 +223,15 @@ export default function Profile() {
                   multiline
                   numberOfLines={4}
                   placeholderTextColor={theme.color.textSecondary.dark}
+                  textAlignVertical="top"
                 />
               </View>
 
               <TouchableOpacity
-                style={styles.saveButton}
+                className="bg-blue-500 py-4 rounded-lg items-center mt-5"
                 onPress={handleSaveProfile}
               >
-                <Text style={styles.saveButtonText}>Save Changes</Text>
+                <Text className="text-white text-base font-semibold">Save Changes</Text>
               </TouchableOpacity>
             </View>
           </KeyboardAvoidingView>
@@ -222,19 +245,19 @@ export default function Profile() {
         transparent={true}
         onRequestClose={() => setSelectedPost(null)}
       >
-        <View style={styles.modalBackdrop}>
+        <View className="flex-1 bg-black/90 justify-center items-center">
           {selectedPost && (
-            <View style={styles.postDetailContainer}>
-              <View style={styles.postDetailHeader}>
+            <View className="w-[90%] h-[80%]">
+              <View className="flex-row justify-end mb-5">
                 <TouchableOpacity onPress={() => setSelectedPost(null)}>
                   <Ionicons name="close" size={24} color={theme.colorWhite} />
                 </TouchableOpacity>
               </View>
 
               <Image
-                source={selectedPost.imageUrl}
-                cachePolicy={"memory-disk"}
-                style={styles.postDetailImage}
+                source={{ uri: selectedPost.imageUrl }}
+                className="w-full h-full rounded-lg"
+                resizeMode="contain"
               />
             </View>
           )}
@@ -246,14 +269,14 @@ export default function Profile() {
 
 function NoPostsFound() {
   return (
-    <View style={styles.emptyPostsContainer}>
+    <View className="items-center py-12 px-8">
       <Ionicons
         name="images-outline"
         size={48}
         color={theme.color.textSecondary.dark}
       />
-      <Text style={styles.emptyPostsText}>No posts yet</Text>
-      <Text style={styles.emptyPostsSubtext}>
+      <Text className="text-white text-lg font-semibold mt-4 text-center">No posts yet</Text>
+      <Text className="text-neutral-400 text-sm mt-2 text-center">
         Share your first moment with the world!
       </Text>
     </View>

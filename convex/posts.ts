@@ -88,6 +88,25 @@ export const getFeedPosts = query({
           )
           .first();
 
+        const recentComments = await ctx.db
+          .query("comments")
+          .withIndex("by_post", (q) => q.eq("postId", post._id))
+          .order("desc")
+          .take(2);
+
+        const recentCommentsWithInfo = await Promise.all(
+            recentComments.map(async (c) => {
+                const u = await ctx.db.get(c.userId);
+                return {
+                    ...c,
+                    user: {
+                        fullname: u?.fullname || "Unknown",
+                        username: u?.username || "unknown",
+                    }
+                };
+            })
+        );
+
         return {
           ...post,
           author: {
@@ -98,12 +117,67 @@ export const getFeedPosts = query({
           },
           isLiked: !!like,
           isBookmarked: !!bookmark,
+          recentComments: recentCommentsWithInfo,
         };
       }),
     );
 
     // Filter out any null posts (where author didn't exist)
     return postsWithInfo.filter((post) => post !== null);
+  },
+});
+
+export const getPostById = query({
+  args: { postId: v.id("posts") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    let currentUser: Doc<"users"> | null = null;
+    if (identity) {
+       currentUser = await ctx.db
+        .query("users")
+        .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+        .first();
+    }
+
+    const post = await ctx.db.get(args.postId);
+    if (!post) return null;
+
+    const postAuthor = await ctx.db.get(post.userId);
+    if (!postAuthor) return null;
+
+    let isLiked = false;
+    let isBookmarked = false;
+
+    if (currentUser !== null) {
+       const user = currentUser;
+       const like = await ctx.db
+         .query("likes")
+         .withIndex("by_user_and_post", (q) =>
+           q.eq("userId", user._id).eq("postId", post._id)
+         )
+         .first();
+       isLiked = !!like;
+
+       const bookmark = await ctx.db
+         .query("bookmarks")
+         .withIndex("by_user_and_post", (q) =>
+           q.eq("userId", user._id).eq("postId", post._id)
+         )
+         .first();
+       isBookmarked = !!bookmark;
+    }
+
+    return {
+      ...post,
+      author: {
+        _id: postAuthor._id,
+        username: postAuthor.username,
+        image: postAuthor.image,
+        clerkId: postAuthor.clerkId,
+      },
+      isLiked,
+      isBookmarked,
+    };
   },
 });
 
