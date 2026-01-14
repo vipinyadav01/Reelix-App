@@ -1,8 +1,6 @@
 import React, { useState, useRef } from "react";
-import { View, Dimensions, Text, Image } from "react-native";
-import PagerView from "react-native-pager-view";
+import { View, Dimensions, Text, Image, ScrollView } from "react-native";
 import { Video, ResizeMode } from "expo-av";
-import { Ionicons } from "@expo/vector-icons";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -18,6 +16,7 @@ interface MediaCarouselProps {
 
 export function MediaCarousel({ media }: MediaCarouselProps) {
   const [activePage, setActivePage] = useState(0);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   if (media.length === 0) return null;
 
@@ -30,69 +29,72 @@ export function MediaCarousel({ media }: MediaCarouselProps) {
     );
   }
 
+  const handleScroll = (event: any) => {
+    const offsetX = event.nativeEvent.contentOffset.x;
+    const page = Math.round(offsetX / SCREEN_WIDTH);
+    setActivePage(page);
+  };
+
+  // Multiple media items
   return (
-    <View style={{ width: SCREEN_WIDTH, height: SCREEN_WIDTH }}>
-      <PagerView
-        className="flex-1"
-        initialPage={0}
-        onPageSelected={(e) => setActivePage(e.nativeEvent.position)}
+    <View>
+      <ScrollView
+        ref={scrollViewRef}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        style={{ width: SCREEN_WIDTH, height: SCREEN_WIDTH }}
       >
-        {media.map((item, index) => (
-          <View key={item.id || index} className="flex-1">
+        {media.map((item) => (
+          <View key={item.id} style={{ width: SCREEN_WIDTH, height: SCREEN_WIDTH }}>
             <MediaContent item={item} />
           </View>
         ))}
-      </PagerView>
+      </ScrollView>
 
-      {/* Pagination Indicators */}
-      <View className="absolute -bottom-5 flex-row self-center">
+      {/* Page Indicator */}
+      <View className="absolute top-3 right-3 bg-black/60 px-2.5 py-1 rounded-full">
+        <Text className="text-white text-xs font-semibold">
+          {activePage + 1}/{media.length}
+        </Text>
+      </View>
+
+      {/* Dots Indicator */}
+      <View className="absolute bottom-3 left-0 right-0 flex-row justify-center gap-1.5">
         {media.map((_, index) => (
           <View
             key={index}
-            className={`w-1.5 h-1.5 rounded-full mx-0.5 ${
-              activePage === index ? "bg-primary" : "bg-neutral-500"
+            className={`w-1.5 h-1.5 rounded-full ${
+              index === activePage ? "bg-white" : "bg-white/40"
             }`}
           />
         ))}
-      </View>
-      
-      {/* Page count badge */}
-      <View className="absolute top-2.5 right-2.5 bg-black/60 px-2 py-1 rounded-xl">
-        <Text className="text-white text-xs font-bold">
-          {activePage + 1}/{media.length}
-        </Text>
       </View>
     </View>
   );
 }
 
 function MediaContent({ item }: { item: MediaItem }) {
-  const video = useRef(null);
-
   if (item.type === "video") {
     return (
-      <View className="flex-1 bg-neutral-800 justify-center items-center">
-        <Video
-            ref={video}
-            source={{ uri: item.url }}
-            style={{ width: "100%", height: "100%" }}
-            resizeMode={ResizeMode.COVER}
-            useNativeControls
-            isLooping
-            shouldPlay={true}
-            isMuted={true}
-        />
-      </View>
+      <Video
+        source={{ uri: item.url }}
+        style={{ width: "100%", height: "100%" }}
+        resizeMode={ResizeMode.COVER}
+        useNativeControls
+        isLooping
+        shouldPlay={false}
+      />
     );
   }
 
   return (
-    <View className="flex-1 bg-neutral-800 justify-center items-center">
-      <Image 
-        source={{ uri: item.url }} 
-        className="w-full h-full" 
-        resizeMode="cover"
-      />
-    </View>
+    <Image
+      source={{ uri: item.url }}
+      style={{ width: "100%", height: "100%" }}
+      resizeMode="cover"
+    />
   );
 }
