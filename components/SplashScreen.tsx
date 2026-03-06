@@ -1,21 +1,32 @@
 import { useEffect } from 'react';
-import { View, Text } from 'react-native';
+import { ActivityIndicator, Image, Text, View } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withRepeat,
   withTiming,
   withSequence,
+  Easing,
 } from 'react-native-reanimated';
 
 export default function SplashScreen() {
-  const opacity = useSharedValue(0.4);
+  const logoOpacity = useSharedValue(0.85);
+  const logoScale = useSharedValue(1);
 
   useEffect(() => {
-    opacity.value = withRepeat(
+    logoOpacity.value = withRepeat(
       withSequence(
-        withTiming(1, { duration: 1000 }),
-        withTiming(0.4, { duration: 1000 })
+        withTiming(1, { duration: 900, easing: Easing.inOut(Easing.quad) }),
+        withTiming(0.85, { duration: 900, easing: Easing.inOut(Easing.quad) })
+      ),
+      -1,
+      false
+    );
+
+    logoScale.value = withRepeat(
+      withSequence(
+        withTiming(1.04, { duration: 900, easing: Easing.inOut(Easing.quad) }),
+        withTiming(1, { duration: 900, easing: Easing.inOut(Easing.quad) })
       ),
       -1,
       false
@@ -23,19 +34,22 @@ export default function SplashScreen() {
   }, []);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
+    opacity: logoOpacity.value,
+    transform: [{ scale: logoScale.value }],
   }));
 
   return (
     <View className="flex-1 bg-black items-center justify-center">
-      <Animated.Text 
-        style={animatedStyle}
-        className="text-[56px] font-bold italic text-white mb-2"
-      >
-        Reelix
-      </Animated.Text>
-      <Text className="text-sm text-neutral-400 tracking-[2px] uppercase">
-        Share Your Moments
+      <Animated.View style={animatedStyle}>
+        <Image
+          source={require('../assets/images/icon.png')}
+          style={{ width: 200, height: 200 }}
+          resizeMode="contain"
+        />
+      </Animated.View>
+      <ActivityIndicator size="small" color="#FFFFFF" style={{ marginTop: 18 }} />
+      <Text className="text-xs text-neutral-400 tracking-[1px] uppercase mt-4">
+        Loading Reelix
       </Text>
     </View>
   );

@@ -84,7 +84,7 @@ export default function InitialLayout() {
         <Stack.Screen name="story/[id]" options={{ presentation: "modal" }} />
         <Stack.Screen name="story/edit" options={{ presentation: "modal" }} />
         <Stack.Screen
-          name="profile/[userId]"
+          name="(tabs)/u/[userId]"
           options={{
             headerShown: true,
             title: "Profile",

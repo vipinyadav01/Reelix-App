@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { Image } from "expo-image";
-import { Video, ResizeMode, AVPlaybackStatus } from "expo-av";
+import { VideoView, useVideoPlayer } from "expo-video";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Ionicons } from "@expo/vector-icons";
@@ -22,6 +22,7 @@ import Animated, {
   Easing,
   cancelAnimation,
 } from "react-native-reanimated";
+import type { SharedValue } from "react-native-reanimated";
 import {
   Gesture,
   GestureDetector,
@@ -75,7 +76,6 @@ export default function StoryViewer() {
   const [index, setIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
-  const videoRef = useRef<Video>(null);
   
   // -- Bottom Sheet --
   const bottomSheetRef = useRef<BottomSheet>(null);
@@ -170,23 +170,6 @@ export default function StoryViewer() {
 
     return () => cancelAnimation(progress);
   }, [index, isPaused, isSheetOpen, isVideoLoading, current, nextStory, progress]);
-
-
-
-  // -- Video Logic --
-  const onPlaybackStatusUpdate = (status: AVPlaybackStatus) => {
-    if (!status.isLoaded) return;
-    if (status.isBuffering) {
-        setIsVideoLoading(true);
-    } else {
-        setIsVideoLoading(false);
-    }
-    
-    if (status.didJustFinish) {
-      
-    }
-  };
-
   const renderBackdrop = useCallback(
     (props: any) => (
       <BottomSheetBackdrop
@@ -220,14 +203,10 @@ export default function StoryViewer() {
         
         {/* Media Content */}
         {current && current.mediaType === "video" ? (
-          <Video
-            ref={videoRef}
-            source={{ uri: current.imageUrl }}
-            style={{ width: "100%", height: "100%" }}
-            resizeMode={ResizeMode.CONTAIN}
+          <StoryVideo
+            uri={current.imageUrl}
             shouldPlay={!isPaused && !isSheetOpen && !isVideoLoading && index < stories.length}
-            isLooping={false} // Let timer handle finish
-            onPlaybackStatusUpdate={onPlaybackStatusUpdate}
+            onReady={() => setIsVideoLoading(false)}
           />
         ) : current ? (
           <Image
@@ -346,7 +325,7 @@ export default function StoryViewer() {
 }
 
 // -- Separated Component for Optimised Rendering --
-const ProgressBar = ({ index, currentIndex, sharedProgress }: { index: number, currentIndex: number, sharedProgress: Animated.SharedValue<number> }) => {
+const ProgressBar = ({ index, currentIndex, sharedProgress }: { index: number, currentIndex: number, sharedProgress: SharedValue<number> }) => {
     const style = useAnimatedStyle(() => {
         let width = 0;
         if (index < currentIndex) width = 100;
@@ -363,4 +342,40 @@ const ProgressBar = ({ index, currentIndex, sharedProgress }: { index: number, c
             <Animated.View style={[style, { height: '100%', backgroundColor: 'white' }]} />
         </View>
     );
+};
+
+const StoryVideo = ({
+  uri,
+  shouldPlay,
+  onReady,
+}: {
+  uri: string;
+  shouldPlay: boolean;
+  onReady: () => void;
+}) => {
+  const player = useVideoPlayer(uri, (videoPlayer) => {
+    videoPlayer.loop = false;
+  });
+
+  useEffect(() => {
+    if (shouldPlay) {
+      player.play();
+      return;
+    }
+    player.pause();
+  }, [player, shouldPlay]);
+
+  useEffect(() => {
+    const readyTimer = setTimeout(() => onReady(), 250);
+    return () => clearTimeout(readyTimer);
+  }, [uri, onReady]);
+
+  return (
+    <VideoView
+      player={player}
+      style={{ width: "100%", height: "100%" }}
+      contentFit="contain"
+      nativeControls={false}
+    />
+  );
 };

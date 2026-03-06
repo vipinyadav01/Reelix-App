@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { View, Dimensions, Text, Image, ScrollView } from "react-native";
-import { Video, ResizeMode } from "expo-av";
+import { VideoView, useVideoPlayer } from "expo-video";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -78,14 +78,16 @@ export function MediaCarousel({ media }: MediaCarouselProps) {
 
 function MediaContent({ item }: { item: MediaItem }) {
   if (item.type === "video") {
+    const player = useVideoPlayer(item.url, (videoPlayer) => {
+      videoPlayer.loop = true;
+    });
+
     return (
-      <Video
-        source={{ uri: item.url }}
+      <VideoView
+        player={player}
         style={{ width: "100%", height: "100%" }}
-        resizeMode={ResizeMode.COVER}
-        useNativeControls
-        isLooping
-        shouldPlay={false}
+        contentFit="cover"
+        nativeControls
       />
     );
   }

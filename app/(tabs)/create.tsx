@@ -21,7 +21,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { theme } from "@/constants/theme";
 import * as MediaLibrary from "expo-media-library";
 import { Image } from "expo-image";
-import { Video, ResizeMode } from "expo-av";
+import { VideoView, useVideoPlayer } from "expo-video";
 import { useMutation } from "convex/react";
 import { Id } from "@/convex/_generated/dataModel";
 import { api } from "@/convex/_generated/api";
@@ -222,13 +222,10 @@ export default function CreateScreen() {
               <View className="w-full h-[375px] bg-neutral-900 border-b border-neutral-800">
                   {selectedAsset && (
                       selectedAsset.mediaType === "video" ? (
-                          <Video
-                            source={{ uri: selectedAsset.uri }}
-                            style={{ width: "100%", height: "100%" }}
-                            resizeMode={ResizeMode.COVER} // Instagram style crop
-                            useNativeControls
-                            isLooping
-                            shouldPlay={true}
+                          <VideoPreview
+                            uri={selectedAsset.uri}
+                            contentFit="cover"
+                            nativeControls
                           />
                       ) : (
                           <Image
@@ -327,12 +324,10 @@ export default function CreateScreen() {
            {/* Thumbnail */}
            <View className="w-20 h-20 mr-4">
               {selectedAsset && (
-                  selectedAsset.mediaType === "video" ? (
-                      <Video
-                          source={{ uri: selectedAsset.uri }}
-                          style={{ width: "100%", height: "100%", borderRadius: 8 }}
-                          resizeMode={ResizeMode.COVER}
-                      />
+                    selectedAsset.mediaType === "video" ? (
+                      <View style={{ width: "100%", height: "100%", borderRadius: 8, overflow: "hidden" }}>
+                      <VideoPreview uri={selectedAsset.uri} contentFit="cover" />
+                      </View>
                   ) : (
                       <Image
                          source={{ uri: selectedAsset.uri }}
@@ -368,5 +363,29 @@ export default function CreateScreen() {
 
       </ScrollView>
     </KeyboardAvoidingView>
+  );
+}
+
+function VideoPreview({
+  uri,
+  contentFit,
+  nativeControls,
+}: {
+  uri: string;
+  contentFit: "cover" | "contain";
+  nativeControls?: boolean;
+}) {
+  const player = useVideoPlayer(uri, (videoPlayer) => {
+    videoPlayer.loop = true;
+    videoPlayer.play();
+  });
+
+  return (
+    <VideoView
+      player={player}
+      style={{ width: "100%", height: "100%" }}
+      contentFit={contentFit}
+      nativeControls={nativeControls}
+    />
   );
 }
