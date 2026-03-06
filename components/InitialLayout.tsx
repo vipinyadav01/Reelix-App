@@ -83,15 +83,6 @@ export default function InitialLayout() {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="story/[id]" options={{ presentation: "modal" }} />
         <Stack.Screen name="story/edit" options={{ presentation: "modal" }} />
-        <Stack.Screen
-          name="(tabs)/u/[userId]"
-          options={{
-            headerShown: true,
-            title: "Profile",
-            headerStyle: { backgroundColor: dynamicBackgroundColor },
-            headerTintColor: dynamicTextColor,
-          }}
-        />
       </Stack>
     </View>
   );
