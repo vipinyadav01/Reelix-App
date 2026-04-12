@@ -21,7 +21,8 @@
         "backgroundColor": "#000000"
       },
       "package": "com.vips2sorganization.reelix",
-      "versionCode": 2
+      "versionCode": 2,
+      "jsEngine": "hermes"
     },
     "web": {
       "bundler": "metro",
@@ -50,6 +51,9 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "developmentClient": {
+      "silentLaunch": false
     },
     "extra": {
       "router": {},

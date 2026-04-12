@@ -1,5 +1,6 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { SymbolView } from "expo-symbols";
 
 export default function TabLayout() {
   return (
@@ -24,24 +25,39 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="home" size={24} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <SymbolView
+              name={focused ? "house.fill" : "house"}
+              size={24}
+              tintColor={color}
+              fallback={<Ionicons name="home" size={24} color={color} />}
+            />
           ),
         }}
       />
       <Tabs.Screen
         name="bookmarks"
         options={{
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="bookmark" size={24} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <SymbolView
+              name={focused ? "bookmark.fill" : "bookmark"}
+              size={24}
+              tintColor={color}
+              fallback={<Ionicons name="bookmark" size={24} color={color} />}
+            />
           ),
         }}
       />
       <Tabs.Screen
         name="inbox"
         options={{
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="chatbubble-ellipses" size={24} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <SymbolView
+              name={focused ? "message.fill" : "message"}
+              size={24}
+              tintColor={color}
+              fallback={<Ionicons name="chatbubble-ellipses" size={24} color={color} />}
+            />
           ),
         }}
       />
@@ -49,7 +65,13 @@ export default function TabLayout() {
         name="create"
         options={{
           tabBarIcon: ({ color }) => (
-            <Ionicons name="add-circle" size={34} color={color} style={{ marginTop: -4 }} />
+            <SymbolView
+              name="plus.circle.fill"
+              size={34}
+              tintColor={color}
+              style={{ marginTop: -4 }}
+              fallback={<Ionicons name="add-circle" size={34} color={color} style={{ marginTop: -4 }} />}
+            />
           ),
         }}
       />
@@ -62,8 +84,13 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="person-circle" size={26} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <SymbolView
+              name={focused ? "person.circle.fill" : "person.circle"}
+              size={26}
+              tintColor={color}
+              fallback={<Ionicons name="person-circle" size={26} color={color} />}
+            />
           ),
         }}
       />

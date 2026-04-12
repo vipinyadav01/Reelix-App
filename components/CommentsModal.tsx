@@ -2,6 +2,7 @@ import { COLORS } from "@/constants/theme";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Ionicons } from "@expo/vector-icons";
+import { SymbolView } from "expo-symbols";
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import {
@@ -72,11 +73,16 @@ export default function CommentsModal({
                         {/* Header */}
                         <View className="flex-row justify-center items-center px-4 pb-3 border-b border-neutral-800 relative bg-[#121212]">
                             <Text className="text-white text-base font-bold">Comments</Text>
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 onPress={onClose}
                                 className="absolute right-4 top-0"
                             >
-                                <Ionicons name="close" size={24} color={COLORS.white} />
+                              <SymbolView
+                                name="xmark.circle.fill"
+                                size={24}
+                                tintColor={COLORS.textSecondary}
+                                fallback={<Ionicons name="close" size={24} color={COLORS.white} />}
+                              />
                             </TouchableOpacity>
                         </View>
 
@@ -87,7 +93,12 @@ export default function CommentsModal({
                             </View>
                         ) : comments.length === 0 ? (
                             <View className="flex-1 justify-center items-center">
-                                <Ionicons name="chatbubble-outline" size={48} color={COLORS.gray} />
+                              <SymbolView
+                                name="bubble.left"
+                                size={48}
+                                tintColor={COLORS.gray}
+                                fallback={<Ionicons name="chatbubble-outline" size={48} color={COLORS.gray} />}
+                              />
                                 <Text className="text-neutral-500 mt-4 text-base">No comments yet</Text>
                                 <Text className="text-neutral-600 text-sm mt-1">Be the first to comment.</Text>
                             </View>
@@ -122,11 +133,19 @@ export default function CommentsModal({
                                 disabled={!newComment.trim()}
                                 className={`p-2 rounded-full ${newComment.trim() ? "bg-blue-600" : "bg-neutral-800"}`}
                             >
-                                <Ionicons 
-                                    name="arrow-up" 
-                                    size={20} 
-                                    color={newComment.trim() ? "white" : "gray"} 
-                                />
+                              <SymbolView
+                                name="arrow.up"
+                                size={20}
+                                tintColor={newComment.trim() ? "white" : "gray"}
+                                weight="bold"
+                                fallback={
+                                  <Ionicons
+                                    name="arrow-up"
+                                    size={20}
+                                    color={newComment.trim() ? "white" : "gray"}
+                                  />
+                                }
+                              />
                             </TouchableOpacity>
                         </View>
                     </KeyboardAvoidingView>

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { SymbolView } from "expo-symbols";
 import { COLORS } from "@/constants/theme";
 
 interface LikeCommentBarProps {
@@ -41,30 +42,54 @@ export function LikeCommentBar({
   return (
     <View className="flex-row justify-between items-center px-3 py-2.5">
       <View className="flex-row items-center">
-        <View className="mr-0">
-            <TouchableOpacity onPress={handleLike} className="mr-4">
-            <Ionicons
+        <TouchableOpacity onPress={handleLike} className="mr-4">
+          <SymbolView
+            name={liked ? "heart.fill" : "heart"}
+            size={26}
+            tintColor={liked ? COLORS.colorRed : COLORS.text}
+            animationSpec={liked ? { effect: { type: "bounce" } } : undefined}
+            fallback={
+              <Ionicons
                 name={liked ? "heart" : "heart-outline"}
                 size={26}
                 color={liked ? COLORS.colorRed : COLORS.text}
-            />
-            </TouchableOpacity>
-        </View>
+              />
+            }
+          />
+        </TouchableOpacity>
 
         <TouchableOpacity onPress={onComment} className="mr-4">
-          <Ionicons name="chatbubble-outline" size={24} color={COLORS.text} />
+          <SymbolView
+            name="bubble.left"
+            size={24}
+            tintColor={COLORS.text}
+            fallback={<Ionicons name="chatbubble-outline" size={24} color={COLORS.text} />}
+          />
         </TouchableOpacity>
 
         <TouchableOpacity onPress={onShare} className="mr-4">
-          <Ionicons name="paper-plane-outline" size={24} color={COLORS.text} />
+          <SymbolView
+            name="paperplane"
+            size={24}
+            tintColor={COLORS.text}
+            fallback={<Ionicons name="paper-plane-outline" size={24} color={COLORS.text} />}
+          />
         </TouchableOpacity>
       </View>
 
       <TouchableOpacity onPress={handleSave}>
-        <Ionicons
-          name={saved ? "bookmark" : "bookmark-outline"}
+        <SymbolView
+          name={saved ? "bookmark.fill" : "bookmark"}
           size={24}
-          color={COLORS.text}
+          tintColor={COLORS.text}
+          animationSpec={saved ? { effect: { type: "bounce" } } : undefined}
+          fallback={
+            <Ionicons
+              name={saved ? "bookmark" : "bookmark-outline"}
+              size={24}
+              color={COLORS.text}
+            />
+          }
         />
       </TouchableOpacity>
     </View>

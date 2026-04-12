@@ -21,10 +21,8 @@ export default function InitialLayout() {
   const dynamicTextColor = isDark ? theme.colorWhite : theme.colorBlack;
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setNavigationReady(true);
-    }, 100);
-    return () => clearTimeout(timer);
+    // Set navigation ready immediately instead of waiting
+    setNavigationReady(true);
   }, []);
 
   useEffect(() => {
@@ -76,7 +74,12 @@ export default function InitialLayout() {
         paddingBottom: 0,
       }}
     >
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: dynamicBackgroundColor } }}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: dynamicBackgroundColor },
+        }}
+      >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
         <Stack.Screen name="sso-callback" options={{ headerShown: false }} />

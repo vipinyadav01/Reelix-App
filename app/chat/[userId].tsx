@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { SymbolView } from "expo-symbols";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -125,7 +126,13 @@ export default function ChatScreen() {
       >
         <View className="flex-row items-center px-4 pt-2">
           <TouchableOpacity onPress={() => router.back()} className="mr-3">
-            <Ionicons name="arrow-back" size={26} color="white" />
+            <SymbolView
+              name="chevron.left"
+              size={26}
+              tintColor="white"
+              weight="semibold"
+              fallback={<Ionicons name="arrow-back" size={26} color="white" />}
+            />
           </TouchableOpacity>
 
           <View className="flex-row items-center flex-1">
@@ -144,7 +151,12 @@ export default function ChatScreen() {
           </View>
 
           <TouchableOpacity>
-            <Ionicons name="information-circle-outline" size={26} color="white" />
+            <SymbolView
+              name="info.circle"
+              size={26}
+              tintColor="white"
+              fallback={<Ionicons name="information-circle-outline" size={26} color="white" />}
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -196,7 +208,12 @@ export default function ChatScreen() {
           className="px-3 pt-3 bg-black border-t border-neutral-800 flex-row items-center"
         >
           <TouchableOpacity className="p-2 bg-neutral-900 rounded-full mr-2">
-            <Ionicons name="camera" size={22} color="#3b82f6" />
+            <SymbolView
+              name="camera.fill"
+              size={22}
+              tintColor="#3b82f6"
+              fallback={<Ionicons name="camera" size={22} color="#3b82f6" />}
+            />
           </TouchableOpacity>
 
           <View className="flex-1 bg-neutral-900 flex-row items-center rounded-full px-4 py-2 mr-2 border border-neutral-800 h-[44px]">
@@ -209,19 +226,38 @@ export default function ChatScreen() {
               onChangeText={setInputText}
             />
             {inputText.length === 0 && (
-                 <TouchableOpacity>
-                     <Ionicons name="image-outline" size={24} color="#666" />
-                 </TouchableOpacity>
+              <TouchableOpacity>
+                <SymbolView
+                  name="photo"
+                  size={24}
+                  tintColor="#666"
+                  fallback={<Ionicons name="image-outline" size={24} color="#666" />}
+                />
+              </TouchableOpacity>
             )}
           </View>
 
           {inputText.length > 0 ? (
-            <TouchableOpacity onPress={handleSend}>
-              <Text className="text-blue-500 font-bold text-base mr-2">Send</Text>
+            <TouchableOpacity
+              onPress={handleSend}
+              className="w-10 h-10 bg-blue-600 rounded-full items-center justify-center mr-1"
+            >
+              <SymbolView
+                name="arrow.up"
+                size={18}
+                tintColor="white"
+                weight="bold"
+                fallback={<Ionicons name="arrow-up" size={18} color="white" />}
+              />
             </TouchableOpacity>
           ) : (
             <TouchableOpacity className="p-2" onPress={() => console.log('Mic')}>
-               <Ionicons name="mic-outline" size={26} color="white" />
+              <SymbolView
+                name="mic"
+                size={26}
+                tintColor="white"
+                fallback={<Ionicons name="mic-outline" size={26} color="white" />}
+              />
             </TouchableOpacity>
           )}
         </View>

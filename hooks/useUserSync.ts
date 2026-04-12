@@ -23,7 +23,7 @@ export function useUserSync() {
       console.log("User sync timeout reached - allowing navigation to proceed");
       setTimeoutReached(true);
       setSyncComplete(true);
-    }, 8000); // Reduced to 8 seconds for better UX
+    }, 4000); // Reduced to 4 seconds for faster app startup
 
     return () => clearTimeout(timeout);
   }, [user, isLoaded]);

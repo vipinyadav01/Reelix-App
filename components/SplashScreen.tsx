@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { ActivityIndicator, Image, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Platform, Text, View } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -8,6 +8,7 @@ import Animated, {
   withSequence,
   Easing,
 } from 'react-native-reanimated';
+import { Host, ProgressView } from '@expo/ui/swift-ui';
 
 export default function SplashScreen() {
   const logoOpacity = useSharedValue(0.85);
@@ -47,7 +48,13 @@ export default function SplashScreen() {
           resizeMode="contain"
         />
       </Animated.View>
-      <ActivityIndicator size="small" color="#FFFFFF" style={{ marginTop: 18 }} />
+      {Platform.OS === 'ios' ? (
+        <Host matchContents style={{ marginTop: 18 }}>
+          <ProgressView />
+        </Host>
+      ) : (
+        <ActivityIndicator size="small" color="#FFFFFF" style={{ marginTop: 18 }} />
+      )}
       <Text className="text-xs text-neutral-400 tracking-[1px] uppercase mt-4">
         Loading Reelix
       </Text>

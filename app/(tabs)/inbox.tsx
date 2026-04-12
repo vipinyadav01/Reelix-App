@@ -3,6 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, Image, StatusBar } from "react-
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { SymbolView } from "expo-symbols";
 import { ScreenHeader } from "@/components/ScreenHeader";
 
 const DUMMY_CHATS = [
@@ -44,10 +45,20 @@ export default function InboxScreen() {
         rightElement={
           <View className="flex-row gap-4">
             <TouchableOpacity onPress={() => {}}>
-              <Ionicons name="search-outline" size={24} color="#fff" />
+              <SymbolView
+                name="magnifyingglass"
+                size={22}
+                tintColor="#fff"
+                fallback={<Ionicons name="search-outline" size={24} color="#fff" />}
+              />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => {}}>
-              <Ionicons name="create-outline" size={24} color="#fff" />
+              <SymbolView
+                name="square.and.pencil"
+                size={22}
+                tintColor="#fff"
+                fallback={<Ionicons name="create-outline" size={24} color="#fff" />}
+              />
             </TouchableOpacity>
           </View>
         }

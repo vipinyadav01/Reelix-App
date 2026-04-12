@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { SymbolView } from "expo-symbols";
 import { useRouter } from "expo-router";
 import { COLORS } from "@/constants/theme";
 
@@ -46,7 +47,13 @@ export const ScreenHeader = ({
             className="mr-3 p-1 -ml-1"
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Ionicons name={backIconName} size={24} color={COLORS.white} />
+            <SymbolView
+              name="chevron.left"
+              size={24}
+              tintColor={COLORS.white}
+              weight="semibold"
+              fallback={<Ionicons name={backIconName} size={24} color={COLORS.white} />}
+            />
           </TouchableOpacity>
         )}
         
