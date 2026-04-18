@@ -3,7 +3,6 @@ import { View, Text, TouchableOpacity, Image, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { formatDistanceToNow } from "date-fns";
 import { COLORS } from "@/constants/theme";
-import { Host, Menu, Button } from "@expo/ui/swift-ui";
 
 interface UserHeaderProps {
   username: string;
@@ -21,6 +20,8 @@ export function UserHeader({
   onUserPress,
 }: UserHeaderProps) {
   const timeAgo = formatDistanceToNow(new Date(createdAt), { addSuffix: true });
+  const isIOS = Platform.OS === "ios";
+  const SwiftUI = isIOS ? require("@expo/ui/swift-ui") : null;
 
   return (
     <View className="flex-row items-center justify-between px-3 py-2.5">
@@ -30,7 +31,11 @@ export function UserHeader({
         activeOpacity={0.7}
       >
         <Image
-          source={{ uri: avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}` }}
+          source={{
+            uri:
+              avatarUrl ||
+              `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}`,
+          }}
           className="w-8 h-8 rounded-full mr-2.5 bg-neutral-800"
           resizeMode="cover"
         />
@@ -40,16 +45,32 @@ export function UserHeader({
         </View>
       </TouchableOpacity>
 
-      {Platform.OS === "ios" ? (
-        <Host matchContents>
-          <Menu label="" systemImage="ellipsis">
-            <Button label="Report" systemImage="flag" onPress={() => onMorePress?.()} />
-            <Button label="Copy Link" systemImage="link" onPress={() => {}} />
-            <Button label="Block User" systemImage="person.slash" role="destructive" onPress={() => {}} />
-          </Menu>
-        </Host>
+      {isIOS && SwiftUI ? (
+        <SwiftUI.Host matchContents>
+          <SwiftUI.Menu label="" systemImage="ellipsis">
+            <SwiftUI.Button
+              label="Report"
+              systemImage="flag"
+              onPress={() => onMorePress?.()}
+            />
+            <SwiftUI.Button
+              label="Copy Link"
+              systemImage="link"
+              onPress={() => {}}
+            />
+            <SwiftUI.Button
+              label="Block User"
+              systemImage="person.slash"
+              role="destructive"
+              onPress={() => {}}
+            />
+          </SwiftUI.Menu>
+        </SwiftUI.Host>
       ) : (
-        <TouchableOpacity onPress={onMorePress} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+        <TouchableOpacity
+          onPress={onMorePress}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
           <Ionicons name="ellipsis-horizontal" size={20} color={COLORS.text} />
         </TouchableOpacity>
       )}
